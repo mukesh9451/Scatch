@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Header } from "../../components/Header";
 import { ProductsGrid } from "./ProductsGrid";
-import { getProducts } from "../../services/api";
+import { getProducts } from "../../services/api"; // ✅ use API service
 import "./HomePage.css";
 
 export function HomePage({ cart, loadCart }) {
@@ -11,22 +11,27 @@ export function HomePage({ cart, loadCart }) {
   const search = searchParams.get("search");
 
   useEffect(() => {
-    const fetchData = async () => {
+    const getHomeData = async () => {
       try {
-        const res = await getProducts(search);
-        setProducts(res.data.products || []);
+        const response = await getProducts(search);
+
+        console.log("API RESPONSE:", response.data);
+
+        // ✅ FIX: ensure array
+        setProducts(response.data.products || []);
       } catch (err) {
-        console.error(err);
+        console.error("Error:", err);
         setProducts([]);
       }
     };
 
-    fetchData();
+    getHomeData();
   }, [search]);
 
   return (
     <>
       <Header cart={cart} />
+
       <div className="home-page">
         <ProductsGrid products={products} loadCart={loadCart} />
       </div>
