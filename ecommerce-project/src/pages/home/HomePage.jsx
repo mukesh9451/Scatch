@@ -11,27 +11,22 @@ export function HomePage({ cart, loadCart }) {
   const search = searchParams.get("search");
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchData = async () => {
       try {
-        const response = await getProducts(search);
-
-        console.log("API RESPONSE:", response.data);
-
-        // ✅ Correct data handling
-        setProducts(response.data.products || []);
-      } catch (error) {
-        console.error("Error fetching products:", error);
+        const res = await getProducts(search);
+        setProducts(res.data.products || []);
+      } catch (err) {
+        console.error(err);
         setProducts([]);
       }
     };
 
-    fetchProducts();
+    fetchData();
   }, [search]);
 
   return (
     <>
       <Header cart={cart} />
-
       <div className="home-page">
         <ProductsGrid products={products} loadCart={loadCart} />
       </div>
