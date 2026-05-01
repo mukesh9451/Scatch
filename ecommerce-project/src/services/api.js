@@ -1,15 +1,15 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://scatch-sd9g.onrender.com/api", // ✅ backend URL
+  baseURL: "https://scatch-sd9g.onrender.com/api",
   withCredentials: true
 });
 
-// ================= PRODUCTS =================
+// PRODUCTS
 export const getProducts = (search) =>
   api.get(search ? `/products?search=${search}` : "/products");
 
-// ================= AUTH =================
+// AUTH
 export const loginUser = (email, password) =>
   api.post("/auth/login", { email, password });
 
