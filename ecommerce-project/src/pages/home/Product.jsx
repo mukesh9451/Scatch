@@ -1,85 +1,110 @@
 import axios from "axios";
 import { useState } from "react";
-import CheckmarkIcon from '../../assets/images/icons/checkmark.png';
+import CheckmarkIcon from "../../assets/images/icons/checkmark.png";
 import { formateMoney } from "../../utils/money";
 
-export function Product({product,loadCart}){
-  
-    const [quantity, setQuantity]=useState(1)
-    const[showAddedMessage,setShowAddedMessage]=useState(false)
-    const addToCart=async ()=>{
-            await axios.post("/api/cart-items",{
-              productId:product._id,
-              quantity
-            });
-            await loadCart();
-            setShowAddedMessage(true)
-            setTimeout(()=>{
-               setShowAddedMessage(false)
-            },1000)
+const BASE_URL = "https://scatch-sd9g.onrender.com";
 
-          };
-    const selectQuantity=(event)=>{
-              const quantitySelected=Number(event.target.value)
-              setQuantity(quantitySelected);
-            }
-    
-    return(
-        
-              <div className="product-container"
-              data-testid="product-container">
-          <div className="product-image-container">
-            <img className="product-image"
-            data-testid="product-image"
-              src={product.image} />
-          </div>
+export function Product({ product, loadCart }) {
+  const [quantity, setQuantity] = useState(1);
+  const [showAddedMessage, setShowAddedMessage] = useState(false);
 
-          <div className="product-name limit-text-to-2-lines">
-            {product.name}
-          </div>
+  const addToCart = async () => {
+    try {
+      await axios.post(
+        `${BASE_URL}/api/cart-items`,
+        {
+          productId: product._id,
+          quantity
+        },
+        {
+          withCredentials: true
+        }
+      );
 
-          <div className="product-rating-container">
-            <img className="product-rating-stars"
-            data-testid="product-rating-stars-image"
-              src={`images/ratings/rating-${product.rating.stars*10}.png`} />
-            <div className="product-rating-count link-primary">
-              {product.rating.count}
-            </div>
-          </div>
+      await loadCart();
 
-          <div className="product-price">
-            {formateMoney(product.priceCents)}
-          </div>
+      setShowAddedMessage(true);
+      setTimeout(() => {
+        setShowAddedMessage(false);
+      }, 1000);
 
-          <div className="product-quantity-container">
-            <select value={quantity} onChange={selectQuantity}>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-              <option value="9">9</option>
-              <option value="10">10</option>
-            </select>
-          </div>
+    } catch (err) {
+      console.error("Add to cart error:", err);
+    }
+  };
 
-          <div className="product-spacer"></div>
+  const selectQuantity = (event) => {
+    setQuantity(Number(event.target.value));
+  };
 
-          <div className="added-to-cart" style={{opacity:showAddedMessage ? 1
-                                                                          : 0
-          }}>
-            <img src={CheckmarkIcon} />
-            Added
-          </div>
+  return (
+    <div className="product-container" data-testid="product-container">
 
-          <button className="add-to-cart-button button-primary"
-          data-testid="add-to-cart-button"
-          onClick={addToCart}>
-            Add to Cart
-          </button>
+      {/* ✅ PRODUCT IMAGE */}
+      <div className="product-image-container">
+        <img
+          className="product-image"
+          data-testid="product-image"
+          src={`${BASE_URL}/${product.image}`}
+          alt={product.name}
+        />
+      </div>
+
+      {/* ✅ PRODUCT NAME */}
+      <div className="product-name limit-text-to-2-lines">
+        {product.name}
+      </div>
+
+      {/* ✅ RATING */}
+      <div className="product-rating-container">
+        <img
+          className="product-rating-stars"
+          data-testid="product-rating-stars-image"
+          src={`${BASE_URL}/images/ratings/rating-${product.rating.stars * 10}.png`}
+          alt="rating"
+        />
+        <div className="product-rating-count link-primary">
+          {product.rating.count}
         </div>
-    )
+      </div>
+
+      {/* ✅ PRICE */}
+      <div className="product-price">
+        {formateMoney(product.priceCents)}
+      </div>
+
+      {/* ✅ QUANTITY */}
+      <div className="product-quantity-container">
+        <select value={quantity} onChange={selectQuantity}>
+          {[...Array(10)].map((_, i) => (
+            <option key={i + 1} value={i + 1}>
+              {i + 1}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="product-spacer"></div>
+
+      {/* ✅ ADDED MESSAGE */}
+      <div
+        className="added-to-cart"
+        style={{ opacity: showAddedMessage ? 1 : 0 }}
+      >
+        <img src={CheckmarkIcon} alt="check" />
+        Added
+      </div>
+
+      {/* ✅ BUTTON */}
+      <button
+        className="add-to-cart-button button-primary"
+        data-testid="add-to-cart-button"
+        onClick={addToCart}
+      >
+        Add to Cart
+      </button>
+
+    </div>
+  );
 }
