@@ -1,33 +1,16 @@
-// src/services/api.js
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://scatch-sd9g.onrender.com/api/auth",
-  withCredentials: true // 🔥 required for cookies
+  baseURL: "https://scatch-sd9g.onrender.com/api",
+  withCredentials: true
 });
 
-export const registerUser = async (name, email, password, role) => {
-  return api.post("/register", {
-    name,
-    email,
-    password,
-    role // ✅ ADD THIS
-  });
-};
+// ✅ LOGIN
+export const loginUser = (email, password) =>
+  api.post("/auth/login", { email, password });
 
-// Login
-export const loginUser = async (email, password) => {
-  return api.post("/login", { email, password });
-};
-
-// Get current user
-export const getCurrentUser = async () => {
-  return api.get("/profile");
-};
-
-// Logout
-export const logoutUser = async () => {
-  return api.post("/logout");
-};
+// ✅ GET CURRENT USER
+export const getCurrentUser = () =>
+  api.get("/auth/profile");
 
 export default api;
