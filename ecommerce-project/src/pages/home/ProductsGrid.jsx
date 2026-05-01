@@ -1,6 +1,7 @@
 import { Product } from "./Product";
 
 export function ProductsGrid({ products, loadCart }) {
+  // 🛡️ prevent crash
   if (!Array.isArray(products)) {
     return <p>Loading...</p>;
   }
