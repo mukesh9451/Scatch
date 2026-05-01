@@ -1,7 +1,6 @@
-// src/pages/Login.jsx
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { loginUser } from "../../services/api";
+import { loginUser, getProfile } from "../../services/api";
 import "./Login.css";
 
 export default function Login() {
@@ -9,6 +8,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -17,10 +17,21 @@ export default function Login() {
     setMessage("");
 
     try {
+      // 🔥 Step 1: login
       await loginUser(email, password);
-      navigate("/home");        // or "/" if your home route is different
+
+      // 🔥 Step 2: verify cookie works
+      const res = await getProfile();
+
+      if (res.data.user) {
+        navigate("/home"); // ✅ redirect ONLY if authenticated
+      }
+
     } catch (err) {
-      setMessage(err.response?.data?.message || "Invalid email or password");
+      console.error(err);
+      setMessage(
+        err.response?.data?.message || "Login failed. Try again."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -29,7 +40,7 @@ export default function Login() {
   return (
     <div className="login-container">
       <h2>Welcome Back</h2>
-      
+
       <form className="login-form" onSubmit={handleSubmit}>
         <input
           type="email"
@@ -39,7 +50,7 @@ export default function Login() {
           placeholder="Email address"
           required
         />
-        
+
         <input
           type="password"
           className="login-input"
@@ -49,8 +60,8 @@ export default function Login() {
           required
         />
 
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           className="login-button"
           disabled={isLoading}
         >
