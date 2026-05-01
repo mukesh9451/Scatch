@@ -1,9 +1,8 @@
-// routes/authRoutes.js
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { authenticateToken } from "../middlewares/authenticateToken.js";
 import User from "../models/User.js";
+import { authenticateToken } from "../middlewares/authenticateToken.js";
 
 const router = express.Router();
 
@@ -11,9 +10,6 @@ const router = express.Router();
 // ================= REGISTER =================
 router.post("/register", async (req, res) => {
   const { name, email, password, role } = req.body;
-
-  // 🔍 DEBUG (remove later)
-  console.log("REGISTER BODY:", req.body);
 
   if (!name || !email || !password) {
     return res.status(400).json({
@@ -36,13 +32,11 @@ router.post("/register", async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role: role === "admin" ? "admin" : "user"  // ✅ safer handling
+      role: role === "admin" ? "admin" : "user"
     });
 
     res.status(201).json({
-      message: "User registered successfully",
-      userId: user._id,
-      role: user.role   // optional (for debugging)
+      message: "User registered successfully"
     });
 
   } catch (err) {
@@ -70,17 +64,18 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign(
       {
         userId: user._id,
-        role: user.role,   // ✅ CRITICAL
+        role: user.role,
         email: user.email
       },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
+    // 🔥 FIXED COOKIE CONFIG
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // true in production
-      sameSite: "strict",
+      secure: true,        // required for HTTPS
+      sameSite: "None",    // required for cross-origin
       maxAge: 60 * 60 * 1000
     });
 
@@ -116,7 +111,11 @@ router.get("/profile", authenticateToken, async (req, res) => {
 
 // ================= LOGOUT =================
 router.post("/logout", (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None"
+  });
 
   res.json({
     message: "Logged out successfully"
