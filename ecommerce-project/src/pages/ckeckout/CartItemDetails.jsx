@@ -1,22 +1,41 @@
 import axios from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { formateMoney } from "../../utils/money";
+
+const BASE_URL = "https://scatch-sd9g.onrender.com";
 
 export function CartItemDetails({ cartItem, loadCart }) {
 
+  const [product, setProduct] = useState(null);
   const [isUpdatingQuantity, setIsUpdatingQuantity] = useState(false);
   const [quantity, setQuantity] = useState(cartItem.quantity);
 
-  // 🟢 DELETE ITEM
+  // ✅ FETCH PRODUCT
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const res = await axios.get(
+          `${BASE_URL}/api/products/${cartItem.productId}`
+        );
+        setProduct(res.data);
+      } catch (err) {
+        console.error("Product fetch error:", err);
+      }
+    };
+
+    fetchProduct();
+  }, [cartItem.productId]);
+
+  // 🟢 DELETE
   const deleteCartItem = async () => {
-    await axios.delete(`/api/cart-items/${cartItem.productId}`);
+    await axios.delete(`${BASE_URL}/api/cart-items/${cartItem.productId}`);
     await loadCart();
   };
 
-  // 🟢 UPDATE QUANTITY
+  // 🟢 UPDATE
   const updateQuantity = async () => {
     if (isUpdatingQuantity) {
-      await axios.put(`/api/cart-items/${cartItem.productId}`, {
+      await axios.put(`${BASE_URL}/api/cart-items/${cartItem.productId}`, {
         quantity: Number(quantity),
       });
       await loadCart();
@@ -26,48 +45,36 @@ export function CartItemDetails({ cartItem, loadCart }) {
     }
   };
 
-  // 🟢 INPUT CHANGE
-  const updateQuantityInput = (event) => {
-    setQuantity(event.target.value);
+  const updateQuantityInput = (e) => {
+    setQuantity(e.target.value);
   };
 
-  // 🟢 KEY HANDLER
-  const handleQuantityKeyDown = (event) => {
-    const keyPressed = event.key;
-
-    if (keyPressed === "Enter") {
-      updateQuantity();
-    } else if (keyPressed === "Escape") {
+  const handleQuantityKeyDown = (e) => {
+    if (e.key === "Enter") updateQuantity();
+    if (e.key === "Escape") {
       setQuantity(cartItem.quantity);
       setIsUpdatingQuantity(false);
     }
   };
 
-  // 🔴 SAFETY CHECK (MOST IMPORTANT FIX)
-  if (!cartItem.product) {
-    return (
-      <div className="cart-item-details">
-        <p>Loading product...</p>
-      </div>
-    );
+  // 🛑 LOADING STATE
+  if (!product) {
+    return <p>Loading product...</p>;
   }
 
   return (
     <>
       <img
         className="product-image"
-        src={cartItem.product.image || "/placeholder.png"}
-        alt={cartItem.product.name}
+        src={`${BASE_URL}/${product.image}`}
+        alt={product.name}
       />
 
       <div className="cart-item-details">
-
-        <div className="product-name">
-          {cartItem.product.name}
-        </div>
+        <div className="product-name">{product.name}</div>
 
         <div className="product-price">
-          {formateMoney(cartItem.product.priceCents)}
+          {formateMoney(product.priceCents)}
         </div>
 
         <div className="product-quantity">
@@ -82,27 +89,18 @@ export function CartItemDetails({ cartItem, loadCart }) {
                 onKeyDown={handleQuantityKeyDown}
               />
             ) : (
-              <span className="quantity-label">
-                {cartItem.quantity}
-              </span>
+              <span className="quantity-label">{cartItem.quantity}</span>
             )}
           </span>
 
-          <span
-            className="update-quantity-link link-primary"
-            onClick={updateQuantity}
-          >
+          <span className="link-primary" onClick={updateQuantity}>
             Update
           </span>
 
-          <span
-            className="delete-quantity-link link-primary"
-            onClick={deleteCartItem}
-          >
+          <span className="link-primary" onClick={deleteCartItem}>
             Delete
           </span>
         </div>
-
       </div>
     </>
   );
