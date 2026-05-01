@@ -22,7 +22,7 @@ const app = express();
 
 // ================= MIDDLEWARE =================
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: "https://scatch-frontend-gzvy.onrender.com",
   credentials: true
 }));
 
