@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://scatch-sd9g.onrender.com",
+  baseURL: "https://scatch-sd9g.onrender.com/api",
   withCredentials: true // 🔥 required for cookies
 });
 
