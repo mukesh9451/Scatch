@@ -1,9 +1,8 @@
 import { Product } from "./Product";
 
 export function ProductsGrid({ products, loadCart }) {
-
   if (!Array.isArray(products)) {
-    return <p>Loading products...</p>;
+    return <p>Loading...</p>;
   }
 
   if (products.length === 0) {
