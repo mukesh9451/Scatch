@@ -21,8 +21,13 @@ const app = express();
 
 
 // ================= MIDDLEWARE =================
+const cors = require("cors");
+
 app.use(cors({
-  origin: "https://scatch-frontend-gzvy.onrender.com",
+  origin: [
+    "http://localhost:5173",
+    "https://scatch-frontend-gzvy.onrender.com"
+  ],
   credentials: true
 }));
 
