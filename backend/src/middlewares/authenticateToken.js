@@ -1,10 +1,10 @@
 import jwt from "jsonwebtoken";
 
 export const authenticateToken = (req, res, next) => {
-  const token = req.cookies?.token;
+  const token = req.cookies.token;
 
   if (!token) {
-    return res.status(401).json({ message: "Access token required" });
+    return res.status(401).json({ message: "Unauthorized" });
   }
 
   try {
@@ -12,6 +12,6 @@ export const authenticateToken = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (err) {
-    return res.status(403).json({ message: "Invalid or expired token" });
+    return res.status(403).json({ message: "Invalid token" });
   }
 };
