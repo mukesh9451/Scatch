@@ -53,35 +53,38 @@ export function CartItemDetails({ cartItem, loadCart }) {
           {formateMoney(product.priceCents)}
         </div>
 
+        {/* ✅ FIXED QUANTITY ROW */}
         <div className="product-quantity">
-          <span>
-            Quantity:
-            {isUpdatingQuantity ? (
-              <input
-                className="quantity-textbox"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-              />
-            ) : (
-              <span className="quantity-label">
-                {cartItem.quantity}
-              </span>
-            )}
-          </span>
+
+          <span>Quantity:</span>
+
+          {isUpdatingQuantity ? (
+            <input
+              type="number"
+              className="quantity-textbox"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+            />
+          ) : (
+            <span className="quantity-label">
+              {cartItem.quantity}
+            </span>
+          )}
 
           <span
-            className="update-quantity-link link-primary"
+            className="update-quantity-link"
             onClick={updateQuantity}
           >
             Update
           </span>
 
           <span
-            className="delete-quantity-link link-primary"
+            className="delete-quantity-link"
             onClick={deleteCartItem}
           >
             Delete
           </span>
+
         </div>
 
       </div>
