@@ -5,6 +5,7 @@ import { DeliveryDate } from "./DeliveryDate";
 export function OrderSummary({ cart, deliveryOptions, loadCart }) {
   return (
     <div className="order-summary">
+
       {deliveryOptions.length > 0 &&
         cart.map((cartItem) => (
           <div key={cartItem.productId} className="cart-item-container">
@@ -14,16 +15,16 @@ export function OrderSummary({ cart, deliveryOptions, loadCart }) {
               deliveryOptions={deliveryOptions}
             />
 
-            {/* 🔥 MAIN GRID */}
+            {/* ✅ 2 COLUMN GRID */}
             <div className="cart-item-details-grid">
 
-              {/* LEFT + CENTER */}
+              {/* LEFT SIDE */}
               <CartItemDetails
                 cartItem={cartItem}
                 loadCart={loadCart}
               />
 
-              {/* RIGHT */}
+              {/* RIGHT SIDE */}
               <DeliveryOptions
                 cartItem={cartItem}
                 deliveryOptions={deliveryOptions}
@@ -34,6 +35,7 @@ export function OrderSummary({ cart, deliveryOptions, loadCart }) {
 
           </div>
         ))}
+
     </div>
   );
 }
