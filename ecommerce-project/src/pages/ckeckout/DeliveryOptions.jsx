@@ -3,7 +3,6 @@ import { formateMoney } from "../../utils/money";
 import dayjs from "dayjs";
 
 export function DeliveryOptions({ deliveryOptions, cartItem, loadCart }) {
-
   return (
     <div className="delivery-options">
 
@@ -11,24 +10,23 @@ export function DeliveryOptions({ deliveryOptions, cartItem, loadCart }) {
         Choose a delivery option:
       </div>
 
-      {deliveryOptions.map((deliveryOption) => {
+      {deliveryOptions.map((option) => {
 
         let priceString = "FREE - Shipping";
-
-        if (deliveryOption.priceCents > 0) {
-          priceString = `${formateMoney(deliveryOption.priceCents)} - Shipping`;
+        if (option.priceCents > 0) {
+          priceString = `${formateMoney(option.priceCents)} - Shipping`;
         }
 
         const updateDeliveryOption = async () => {
           await api.put(`/cart-items/${cartItem.productId}`, {
-            deliveryOptionId: deliveryOption._id
+            deliveryOptionId: option._id
           });
           await loadCart();
         };
 
         return (
           <div
-            key={deliveryOption._id}
+            key={option._id}
             className="delivery-option"
             onClick={updateDeliveryOption}
           >
@@ -36,13 +34,13 @@ export function DeliveryOptions({ deliveryOptions, cartItem, loadCart }) {
             <input
               type="radio"
               className="delivery-option-input"
-              checked={deliveryOption._id === cartItem.deliveryOptionId}
+              checked={option._id === cartItem.deliveryOptionId}
               readOnly
             />
 
             <div>
               <div className="delivery-option-date">
-                {dayjs(deliveryOption.estimatedDeliveryTimeMs)
+                {dayjs(option.estimatedDeliveryTimeMs)
                   .format("dddd, MMMM, D")}
               </div>
 
