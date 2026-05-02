@@ -10,23 +10,14 @@ export function CartItemDetails({ cartItem, loadCart }) {
   const [isUpdatingQuantity, setIsUpdatingQuantity] = useState(false);
   const [quantity, setQuantity] = useState(cartItem.quantity);
 
-  // ✅ FETCH PRODUCT
+  // 🔥 FETCH PRODUCT
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const res = await axios.get(
-          `${BASE_URL}/api/products/${cartItem.productId}`
-        );
-        setProduct(res.data);
-      } catch (err) {
-        console.error("Product fetch error:", err);
-      }
-    };
-
-    fetchProduct();
+    axios
+      .get(`${BASE_URL}/api/products/${cartItem.productId}`)
+      .then(res => setProduct(res.data))
+      .catch(err => console.error(err));
   }, [cartItem.productId]);
 
-  // 🟢 DELETE
   const deleteCartItem = async () => {
     await axios.delete(
       `${BASE_URL}/api/cart-items/${cartItem.productId}`,
@@ -35,7 +26,6 @@ export function CartItemDetails({ cartItem, loadCart }) {
     await loadCart();
   };
 
-  // 🟢 UPDATE
   const updateQuantity = async () => {
     if (isUpdatingQuantity) {
       await axios.put(
@@ -50,22 +40,7 @@ export function CartItemDetails({ cartItem, loadCart }) {
     }
   };
 
-  const updateQuantityInput = (e) => {
-    setQuantity(e.target.value);
-  };
-
-  const handleQuantityKeyDown = (e) => {
-    if (e.key === "Enter") updateQuantity();
-    if (e.key === "Escape") {
-      setQuantity(cartItem.quantity);
-      setIsUpdatingQuantity(false);
-    }
-  };
-
-  // ⏳ LOADING
-  if (!product) {
-    return <p>Loading product...</p>;
-  }
+  if (!product) return <p>Loading product...</p>;
 
   return (
     <>
@@ -76,42 +51,26 @@ export function CartItemDetails({ cartItem, loadCart }) {
       />
 
       <div className="cart-item-details">
-
-        <div className="product-name">
-          {product.name}
-        </div>
+        <div className="product-name">{product.name}</div>
 
         <div className="product-price">
           {formateMoney(product.priceCents)}
         </div>
 
         <div className="product-quantity">
-          <span>
-            Quantity:
-            {isUpdatingQuantity ? (
-              <input
-                type="text"
-                className="quantity-textbox"
-                value={quantity}
-                onChange={updateQuantityInput}
-                onKeyDown={handleQuantityKeyDown}
-              />
-            ) : (
-              <span className="quantity-label">
-                {cartItem.quantity}
-              </span>
-            )}
-          </span>
+          Quantity:
+          {isUpdatingQuantity ? (
+            <input
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+            />
+          ) : (
+            <span>{cartItem.quantity}</span>
+          )}
 
-          <span className="link-primary" onClick={updateQuantity}>
-            Update
-          </span>
-
-          <span className="link-primary" onClick={deleteCartItem}>
-            Delete
-          </span>
+          <span onClick={updateQuantity}>Update</span>
+          <span onClick={deleteCartItem}>Delete</span>
         </div>
-
       </div>
     </>
   );
