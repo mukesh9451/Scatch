@@ -1,4 +1,3 @@
-// routes/products.js
 import express from "express";
 import Product from "../models/Product.js";
 import { authenticateToken } from "../middlewares/authenticateToken.js";
@@ -7,7 +6,7 @@ import { authorizeRole } from "../middlewares/authorizeRole.js";
 const router = express.Router();
 
 
-// ================= GET PRODUCTS (PUBLIC) =================
+// ================= GET ALL PRODUCTS (PUBLIC) =================
 router.get("/", async (req, res) => {
   try {
     const search = req.query.search;
@@ -35,6 +34,27 @@ router.get("/", async (req, res) => {
 });
 
 
+// ================= GET SINGLE PRODUCT (🔥 FIX ADDED) =================
+router.get("/:id", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({
+        message: "Product not found"
+      });
+    }
+
+    res.json(product);
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+});
+
+
 // ================= CREATE PRODUCT (ADMIN ONLY) =================
 router.post(
   "/",
@@ -54,12 +74,10 @@ router.post(
         name,
         priceCents,
         image,
-
         rating: {
           stars: rating?.stars || 0,
           count: rating?.count || 0
         },
-
         keywords: keywords || []
       });
 
