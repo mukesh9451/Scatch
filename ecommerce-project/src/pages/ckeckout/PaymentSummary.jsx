@@ -1,38 +1,28 @@
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import api from "../../services/api";
 import { formateMoney } from "../../utils/money";
 
-const BASE_URL = "https://scatch-sd9g.onrender.com";
-
 export function PaymentSummary({ paymentSummary, loadCart }) {
-
   const navigate = useNavigate();
 
-  const createOrder = async () => {
-    await axios.post(
-      `${BASE_URL}/api/orders`,
-      {},
-      { withCredentials: true }
-    );
+  if (!paymentSummary) return <p>Loading payment...</p>;
 
+  const createOrder = async () => {
+    await api.post("/orders");
     await loadCart();
     navigate("/orders");
   };
 
   return (
-    <div className="payment-summary">
-      <div className="payment-summary-title">Payment Summary</div>
+    <div>
+      <h3>Payment Summary</h3>
 
-      {paymentSummary && (
-        <>
-          <div>Items: {paymentSummary.totalItems}</div>
-          <div>{formateMoney(paymentSummary.totalCostCents)}</div>
+      <p>Items: {paymentSummary.totalItems}</p>
+      <p>Total: {formateMoney(paymentSummary.totalCostCents)}</p>
 
-          <button onClick={createOrder}>
-            Place your order
-          </button>
-        </>
-      )}
+      <button onClick={createOrder}>
+        Place Order
+      </button>
     </div>
   );
 }
