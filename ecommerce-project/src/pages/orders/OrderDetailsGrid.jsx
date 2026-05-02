@@ -1,21 +1,22 @@
 import { Link } from "react-router-dom";
-import axios from "axios";
+import api from "../../services/api"; // ✅ FIX
 import BuyAgainIcon from "../../assets/images/icons/buy-again.png";
 import dayjs from "dayjs";
 import { Fragment } from "react";
 
 export function OrderDetailsGrid({ order, loadCart }) {
+
   return (
     <div className="order-details-grid">
-      {order.products.map((orderProduct) => {
-        
-        // 🔥 SAFETY: skip if product missing
+
+      {Array.isArray(order.products) && order.products.map((orderProduct) => {
+
         if (!orderProduct.product) return null;
 
         const addToCart = async () => {
           try {
-            await axios.post("/api/cart-items", {
-              productId: orderProduct.productId, // ✅ FIXED
+            await api.post("/cart-items", {   // ✅ FIX
+              productId: orderProduct.productId,
               quantity: 1
             });
 
@@ -27,18 +28,21 @@ export function OrderDetailsGrid({ order, loadCart }) {
 
         return (
           <Fragment key={orderProduct.productId}>
-            
+
             <div className="product-image-container">
-              <img src={orderProduct.product?.image} />
+              <img
+                src={`https://scatch-sd9g.onrender.com/${orderProduct.product.image}`} // ✅ FIX
+                alt=""
+              />
             </div>
 
             <div className="product-details">
               <div className="product-name">
-                {orderProduct.product?.name}
+                {orderProduct.product.name}
               </div>
 
               <div className="product-delivery-date">
-                Arriving on:{" "}
+                Arriving on{" "}
                 {dayjs(orderProduct.estimatedDeliveryTimeMs).format("MMMM D")}
               </div>
 
@@ -51,19 +55,18 @@ export function OrderDetailsGrid({ order, loadCart }) {
                 onClick={addToCart}
               >
                 <img className="buy-again-icon" src={BuyAgainIcon} />
-                <span className="buy-again-message">Add to Cart</span>
+                <span>Add to Cart</span>
               </button>
             </div>
 
             <div className="product-actions">
-              
-              {/* 🔥 MAIN FIX HERE */}
-              <Link to={`/tracking/${order._id}/${orderProduct.productId || orderProduct.product?._id}`}>
+              <Link
+                to={`/tracking/${order._id}/${orderProduct.productId}`}
+              >
                 <button className="track-package-button button-secondary">
                   Track package
                 </button>
               </Link>
-
             </div>
 
           </Fragment>
