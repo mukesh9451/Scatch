@@ -1,46 +1,82 @@
-import { Header } from "../../components/Header";
-import "./CheckoutPage.css";
-import { useEffect, useState } from "react";
 import api from "../../services/api";
-import { OrderSummary } from "./OrderSummary";
-import { PaymentSummary } from "./PaymentSummary";
+import { useEffect, useState } from "react";
+import { formateMoney } from "../../utils/money";
 
-export function CheckoutPage({ cart, loadCart }) {
-  const [deliveryOptions, setDeliveryOptions] = useState([]);
-  const [paymentSummary, setPaymentSummary] = useState(null);
-
-  useEffect(() => {
-    api.get("/delivery-options")
-      .then(res => setDeliveryOptions(res.data))
-      .catch(console.error);
-  }, [cart]);
+export function CartItemDetails({ cartItem, loadCart }) {
+  const [product, setProduct] = useState(null);
+  const [isUpdatingQuantity, setIsUpdatingQuantity] = useState(false);
+  const [quantity, setQuantity] = useState(cartItem.quantity);
 
   useEffect(() => {
-    api.get("/payment-summary")
-      .then(res => setPaymentSummary(res.data))
+    api.get(`/products/${cartItem.productId}`)
+      .then(res => setProduct(res.data))
       .catch(console.error);
-  }, [cart]);
+  }, [cartItem.productId]);
+
+  const deleteCartItem = async () => {
+    await api.delete(`/cart-items/${cartItem.productId}`);
+    await loadCart();
+  };
+
+  const updateQuantity = async () => {
+    if (isUpdatingQuantity) {
+      await api.put(`/cart-items/${cartItem.productId}`, {
+        quantity: Number(quantity)
+      });
+      await loadCart();
+      setIsUpdatingQuantity(false);
+    } else {
+      setIsUpdatingQuantity(true);
+    }
+  };
+
+  if (!product) return <p>Loading product...</p>;
 
   return (
-    <>
-      <Header cart={cart} />
+    <div className="cart-item-left">
 
-      <div className="checkout-page">
-        <div className="page-title">Review your order</div>
+      <img
+        className="product-image"
+        src={`https://scatch-sd9g.onrender.com/${product.image}`}
+        alt={product.name}
+      />
 
-        <div className="checkout-grid">
-          <OrderSummary
-            cart={cart}
-            deliveryOptions={deliveryOptions}
-            loadCart={loadCart}
-          />
+      <div className="cart-item-details">
 
-          <PaymentSummary
-            paymentSummary={paymentSummary}
-            loadCart={loadCart}
-          />
+        <div className="product-name">
+          {product.name}
         </div>
+
+        <div className="product-price">
+          {formateMoney(product.priceCents)}
+        </div>
+
+        <div className="product-quantity">
+
+          <span>Quantity:</span>
+
+          {isUpdatingQuantity ? (
+            <input
+              type="number"
+              className="quantity-textbox"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+            />
+          ) : (
+            <span>{cartItem.quantity}</span>
+          )}
+
+          <span className="update-quantity-link" onClick={updateQuantity}>
+            Update
+          </span>
+
+          <span className="delete-quantity-link" onClick={deleteCartItem}>
+            Delete
+          </span>
+
+        </div>
+
       </div>
-    </>
+    </div>
   );
 }
