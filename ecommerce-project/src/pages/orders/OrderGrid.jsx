@@ -1,3 +1,6 @@
+import { OrderDetailsGrid } from "./OrderDetailsGrid";
+import { OrderHeader } from "./OrderHeader"; // ✅ FIX ADDED
+
 export function OrderGrid({ orders, loadCart }) {
   return (
     <div className="orders-grid">
