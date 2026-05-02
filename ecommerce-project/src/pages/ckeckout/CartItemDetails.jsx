@@ -28,16 +28,21 @@ export function CartItemDetails({ cartItem, loadCart }) {
 
   // 🟢 DELETE
   const deleteCartItem = async () => {
-    await axios.delete(`${BASE_URL}/api/cart-items/${cartItem.productId}`);
+    await axios.delete(
+      `${BASE_URL}/api/cart-items/${cartItem.productId}`,
+      { withCredentials: true }
+    );
     await loadCart();
   };
 
   // 🟢 UPDATE
   const updateQuantity = async () => {
     if (isUpdatingQuantity) {
-      await axios.put(`${BASE_URL}/api/cart-items/${cartItem.productId}`, {
-        quantity: Number(quantity),
-      });
+      await axios.put(
+        `${BASE_URL}/api/cart-items/${cartItem.productId}`,
+        { quantity: Number(quantity) },
+        { withCredentials: true }
+      );
       await loadCart();
       setIsUpdatingQuantity(false);
     } else {
@@ -57,7 +62,7 @@ export function CartItemDetails({ cartItem, loadCart }) {
     }
   };
 
-  // 🛑 LOADING STATE
+  // ⏳ LOADING
   if (!product) {
     return <p>Loading product...</p>;
   }
@@ -71,7 +76,10 @@ export function CartItemDetails({ cartItem, loadCart }) {
       />
 
       <div className="cart-item-details">
-        <div className="product-name">{product.name}</div>
+
+        <div className="product-name">
+          {product.name}
+        </div>
 
         <div className="product-price">
           {formateMoney(product.priceCents)}
@@ -89,7 +97,9 @@ export function CartItemDetails({ cartItem, loadCart }) {
                 onKeyDown={handleQuantityKeyDown}
               />
             ) : (
-              <span className="quantity-label">{cartItem.quantity}</span>
+              <span className="quantity-label">
+                {cartItem.quantity}
+              </span>
             )}
           </span>
 
@@ -101,6 +111,7 @@ export function CartItemDetails({ cartItem, loadCart }) {
             Delete
           </span>
         </div>
+
       </div>
     </>
   );
