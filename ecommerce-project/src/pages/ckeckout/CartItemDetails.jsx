@@ -1,5 +1,5 @@
 import api from "../../services/api";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { formateMoney } from "../../utils/money";
 
 export function CartItemDetails({ cartItem, loadCart }) {
@@ -33,20 +33,19 @@ export function CartItemDetails({ cartItem, loadCart }) {
   if (!product) return <p>Loading product...</p>;
 
   return (
-    <>
+    <div className="cart-item-left">
+
       {/* IMAGE */}
-      <div className="product-image-container">
-        <img
-          className="product-image"
-          src={`https://scatch-sd9g.onrender.com/${product.image}`}
-          alt={product.name}
-        />
-      </div>
+      <img
+        className="product-image"
+        src={`https://scatch-sd9g.onrender.com/${product.image}`}
+        alt={product.name}
+      />
 
       {/* DETAILS */}
       <div className="cart-item-details">
 
-        <div className="product-name limit-text-to-2-lines">
+        <div className="product-name">
           {product.name}
         </div>
 
@@ -86,6 +85,6 @@ export function CartItemDetails({ cartItem, loadCart }) {
         </div>
 
       </div>
-    </>
+    </div>
   );
 }
