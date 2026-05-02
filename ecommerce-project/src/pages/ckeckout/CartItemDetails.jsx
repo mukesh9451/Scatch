@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { formateMoney } from "../../utils/money";
 
 export function CartItemDetails({ cartItem, loadCart }) {
-
   const [product, setProduct] = useState(null);
   const [isUpdatingQuantity, setIsUpdatingQuantity] = useState(false);
   const [quantity, setQuantity] = useState(cartItem.quantity);
@@ -34,14 +33,15 @@ export function CartItemDetails({ cartItem, loadCart }) {
   if (!product) return <p>Loading product...</p>;
 
   return (
-    <div className="cart-item-details-grid">
-
+    <>
       {/* IMAGE */}
-      <img
-        className="product-image"
-        src={`https://scatch-sd9g.onrender.com/${product.image}`}
-        alt={product.name}
-      />
+      <div className="product-image-container">
+        <img
+          className="product-image"
+          src={`https://scatch-sd9g.onrender.com/${product.image}`}
+          alt={product.name}
+        />
+      </div>
 
       {/* DETAILS */}
       <div className="cart-item-details">
@@ -86,6 +86,6 @@ export function CartItemDetails({ cartItem, loadCart }) {
         </div>
 
       </div>
-    </div>
+    </>
   );
 }
