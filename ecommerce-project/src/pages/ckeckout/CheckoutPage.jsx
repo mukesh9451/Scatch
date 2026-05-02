@@ -1,30 +1,24 @@
-import axios from "axios";
 import { Header } from "../../components/Header";
 import "./CheckoutPage.css";
 import { useEffect, useState } from "react";
+import api from "../../services/api";
 import { OrderSummary } from "./OrderSummary";
 import { PaymentSummary } from "./PaymentSummary";
 
-const BASE_URL = "https://scatch-sd9g.onrender.com";
-
 export function CheckoutPage({ cart, loadCart }) {
-
   const [deliveryOptions, setDeliveryOptions] = useState([]);
   const [paymentSummary, setPaymentSummary] = useState(null);
 
   useEffect(() => {
-    axios
-      .get(`${BASE_URL}/api/delivery-options`)
-      .then(res => setDeliveryOptions(res.data));
+    api.get("/delivery-options")
+      .then(res => setDeliveryOptions(res.data))
+      .catch(console.error);
   }, [cart]);
 
   useEffect(() => {
-    axios
-      .get(`${BASE_URL}/api/payment-summary`, {
-        withCredentials: true
-      })
+    api.get("/payment-summary")
       .then(res => setPaymentSummary(res.data))
-      .catch(err => console.error(err));
+      .catch(console.error);
   }, [cart]);
 
   return (
