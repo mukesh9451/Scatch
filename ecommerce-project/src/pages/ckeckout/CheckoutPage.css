@@ -239,3 +239,9 @@
   border-radius: 4px;
   cursor: pointer;
 }
+.cart-item-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  column-gap: 50px; /* was 30px → move right side further right */
+  align-items: start;
+}
