@@ -22,10 +22,16 @@ export function TrackingPage({ cart }) {
         if (Array.isArray(orderData.products)) {
 
           // 🔥 FIX: use _doc.productId
-          const found = orderData.products.find((p) =>
-            p?._doc?.productId === productId ||
-            p?.product?._id === productId
-          );
+        const found = Array.isArray(orderData?.products)
+  ? orderData.products.find((p) => {
+      const id =
+        p?._doc?.productId ||     // mongoose case
+        p?.productId ||           // plain object case
+        p?.product?._id;          // populated case
+
+      return id?.toString() === productId;
+    })
+  : null;
 
           setOrderProduct(found || null);
         }
