@@ -108,11 +108,11 @@
 .cart-item-details-grid {
   display: grid;
   grid-template-columns: 1fr 280px;
-  column-gap: 30px;
+  column-gap: 50px; /* ✅ FINAL spacing (clean, no duplicate) */
   align-items: start;
 }
 
-/* 🔥 CRITICAL FIX: prevents overflow */
+/* prevent overflow */
 .cart-item-details-grid > div {
   min-width: 0;
 }
@@ -145,8 +145,6 @@
 .product-name {
   font-weight: 700;
   line-height: 1.4;
-
-  /* 🔥 CRITICAL FIX */
   word-break: break-word;
   overflow-wrap: break-word;
 }
@@ -238,10 +236,4 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
-}
-.cart-item-details-grid {
-  display: grid;
-  grid-template-columns: 1fr 280px;
-  column-gap: 50px; /* was 30px → move right side further right */
-  align-items: start;
 }
