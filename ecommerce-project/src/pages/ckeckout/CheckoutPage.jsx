@@ -1,74 +1,77 @@
 import axios from "axios";
-import { Header } from "../../components/Header";
-import "./CheckoutPage.css";
-import { useEffect, useState } from "react";
-import { OrderSummary } from "./OrderSummary";
-import { PaymentSummary } from "./PaymentSummary";
+import { useState, useEffect } from "react";
+import { formateMoney } from "../../utils/money";
 
-// ✅ backend URL
 const BASE_URL = "https://scatch-sd9g.onrender.com";
 
-export function CheckoutPage({ cart, loadCart }) {
-  const [deliveryOptions, setDeliveryOptions] = useState([]);
-  const [paymentSummary, setPaymentSummary] = useState(null);
+export function CartItemDetails({ cartItem, loadCart }) {
 
-  // ================= DELIVERY OPTIONS =================
+  const [product, setProduct] = useState(null);
+  const [quantity, setQuantity] = useState(cartItem.quantity);
+  const [isUpdatingQuantity, setIsUpdatingQuantity] = useState(false);
+
+  // 🔥 fetch product
   useEffect(() => {
-    const fetchCheckoutData = async () => {
-      try {
-        const response = await axios.get(
-          `${BASE_URL}/api/delivery-options?expand=estimatedDeliveryTime`
-        );
+    axios
+      .get(`${BASE_URL}/api/products/${cartItem.productId}`)
+      .then((res) => setProduct(res.data))
+      .catch((err) => console.error(err));
+  }, [cartItem.productId]);
 
-        setDeliveryOptions(response.data);
-        console.log("Delivery:", response.data);
-      } catch (err) {
-        console.error("Delivery error:", err);
-      }
-    };
+  // 🔥 delete
+  const deleteCartItem = async () => {
+    await axios.delete(
+      `${BASE_URL}/api/cart-items/${cartItem.productId}`,
+      { withCredentials: true }
+    );
+    await loadCart();
+  };
 
-    fetchCheckoutData();
-  }, [cart]);
+  // 🔥 update
+  const updateQuantity = async () => {
+    if (isUpdatingQuantity) {
+      await axios.put(
+        `${BASE_URL}/api/cart-items/${cartItem.productId}`,
+        { quantity: Number(quantity) },
+        { withCredentials: true }
+      );
+      await loadCart();
+      setIsUpdatingQuantity(false);
+    } else {
+      setIsUpdatingQuantity(true);
+    }
+  };
 
-  // ================= PAYMENT SUMMARY =================
-  useEffect(() => {
-    const fetchPaymentSummaryData = async () => {
-      try {
-        const response = await axios.get(
-          `${BASE_URL}/api/payment-summary`,
-          {
-            withCredentials: true
-          }
-        );
-
-        setPaymentSummary(response.data);
-        console.log("Payment:", response.data);
-      } catch (err) {
-        console.error("Payment error:", err);
-      }
-    };
-
-    fetchPaymentSummaryData();
-  }, [cart]);
+  if (!product) return <p>Loading product...</p>;
 
   return (
     <>
-      <Header cart={cart} />
+      <img
+        className="product-image"
+        src={`${BASE_URL}/${product.image}`}
+        alt={product.name}
+      />
 
-      <div className="checkout-page">
-        <div className="page-title">Review your order</div>
+      <div className="cart-item-details">
+        <div className="product-name">{product.name}</div>
 
-        <div className="checkout-grid">
-          <OrderSummary
-            cart={cart}
-            deliveryOptions={deliveryOptions}
-            loadCart={loadCart}
-          />
+        <div className="product-price">
+          {formateMoney(product.priceCents)}
+        </div>
 
-          <PaymentSummary
-            paymentSummary={paymentSummary}
-            loadCart={loadCart}
-          />
+        <div className="product-quantity">
+          Quantity:
+          {isUpdatingQuantity ? (
+            <input
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+            />
+          ) : (
+            <span>{cartItem.quantity}</span>
+          )}
+
+          <span onClick={updateQuantity}>Update</span>
+          <span onClick={deleteCartItem}>Delete</span>
         </div>
       </div>
     </>
