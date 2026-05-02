@@ -1,33 +1,33 @@
-import axios from 'axios'
-import { useEffect, useState } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect, useState } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 
-import { HomePage } from './pages/home/HomePage'
-import { CheckoutPage } from './pages/ckeckout/CheckoutPage'
-import { OrdersPage } from './pages/orders/OrdersPage'
-import { TrackingPage } from './pages/Tracking/TrackingPage'
-import { NotFoundPage } from './pages/NotFoundPage'
-import { AddProductPage } from "./pages/home/AddProductPage"
+import api from './services/api';
 
-import Login from './components/Auth/Login'
-import Register from './components/Auth/Register'
-import Logout from './components/Auth/Logout'
-import ProtectedRoute from './components/Auth/ProtectedRoute'
+import { HomePage } from './pages/home/HomePage';
+import { CheckoutPage } from './pages/ckeckout/CheckoutPage';
+import { OrdersPage } from './pages/orders/OrdersPage';
+import { TrackingPage } from './pages/Tracking/TrackingPage';
+import { NotFoundPage } from './pages/NotFoundPage';
+import { AddProductPage } from "./pages/home/AddProductPage";
 
-import api from './services/api'; // ✅ USE THIS
+import Login from './components/Auth/Login';
+import Register from './components/Auth/Register';
+import Logout from './components/Auth/Logout';
+import ProtectedRoute from './components/Auth/ProtectedRoute';
 
 function App() {
+
   const [cart, setCart] = useState([]);
 
   const loadCart = async () => {
     try {
-      const res = await api.get("/cart-items"); // ✅ FIXED
+      const res = await api.get("/cart-items");
 
       console.log("CART API:", res.data);
 
-      setCart(res.data || []); // ❌ REMOVE FILTER
+      setCart(res.data || []);
     } catch (err) {
-      console.error("Cart load error:", err);
+      console.error("Cart error:", err);
       setCart([]);
     }
   };
@@ -35,9 +35,6 @@ function App() {
   useEffect(() => {
     loadCart();
   }, []);
-
-  return ( ... );
-}
 
   return (
     <Routes>
@@ -47,7 +44,7 @@ function App() {
       <Route path="login" element={<Login />} />
       <Route path="register" element={<Register />} />
 
-      {/* ADMIN ONLY */}
+      {/* ADMIN */}
       <Route
         path="addProduct"
         element={
@@ -58,29 +55,41 @@ function App() {
       />
 
       {/* USER */}
-      <Route path="home" element={
-        <ProtectedRoute>
-          <HomePage cart={cart} loadCart={loadCart} />
-        </ProtectedRoute>
-      } />
+      <Route
+        path="home"
+        element={
+          <ProtectedRoute>
+            <HomePage cart={cart} loadCart={loadCart} />
+          </ProtectedRoute>
+        }
+      />
 
-      <Route path="checkout" element={
-        <ProtectedRoute>
-          <CheckoutPage cart={cart} loadCart={loadCart} />
-        </ProtectedRoute>
-      } />
+      <Route
+        path="checkout"
+        element={
+          <ProtectedRoute>
+            <CheckoutPage cart={cart} loadCart={loadCart} />
+          </ProtectedRoute>
+        }
+      />
 
-      <Route path="orders" element={
-        <ProtectedRoute>
-          <OrdersPage cart={cart} loadCart={loadCart} />
-        </ProtectedRoute>
-      } />
+      <Route
+        path="orders"
+        element={
+          <ProtectedRoute>
+            <OrdersPage cart={cart} loadCart={loadCart} />
+          </ProtectedRoute>
+        }
+      />
 
-      <Route path="tracking/:orderId/:productId" element={
-        <ProtectedRoute>
-          <TrackingPage cart={cart} />
-        </ProtectedRoute>
-      } />
+      <Route
+        path="tracking/:orderId/:productId"
+        element={
+          <ProtectedRoute>
+            <TrackingPage cart={cart} />
+          </ProtectedRoute>
+        }
+      />
 
       <Route path="logout" element={<Logout />} />
       <Route path="*" element={<NotFoundPage cart={cart} />} />
