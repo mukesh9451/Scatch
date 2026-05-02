@@ -1,53 +1,33 @@
-import axios from "axios";
+import api from "../../services/api";
 import { formateMoney } from "../../utils/money";
 import dayjs from "dayjs";
 
-const BASE_URL = "https://scatch-sd9g.onrender.com";
-
 export function DeliveryOptions({ deliveryOptions, cartItem, loadCart }) {
-
   return (
     <div className="delivery-options">
-      <div className="delivery-options-title">
-        Choose a delivery option:
-      </div>
-
-      {deliveryOptions.map((deliveryOption) => {
-
-        let priceString = "FREE - Shipping";
-        if (deliveryOption.priceCents > 0) {
-          priceString = `${formateMoney(deliveryOption.priceCents)} - Shipping`;
-        }
+      {deliveryOptions.map(option => {
 
         const updateDeliveryOption = async () => {
-          await axios.put(
-            `${BASE_URL}/api/cart-items/${cartItem.productId}`,
-            { deliveryOptionId: deliveryOption._id },
-            { withCredentials: true }
-          );
+          await api.put(`/cart-items/${cartItem.productId}`, {
+            deliveryOptionId: option._id
+          });
           await loadCart();
         };
 
         return (
-          <div
-            key={deliveryOption._id}
-            className="delivery-option"
-            onClick={updateDeliveryOption}
-          >
+          <div key={option._id} onClick={updateDeliveryOption}>
             <input
               type="radio"
-              checked={deliveryOption._id === cartItem.deliveryOptionId}
+              checked={option._id === cartItem.deliveryOptionId}
               readOnly
             />
 
             <div>
-              <div className="delivery-option-date">
-                {dayjs(deliveryOption.estimatedDeliveryTimeMs).format("dddd, MMMM, D")}
-              </div>
-
-              <div className="delivery-option-price">
-                {priceString}
-              </div>
+              {dayjs(option.estimatedDeliveryTimeMs).format("dddd, MMMM, D")}
+              <br />
+              {option.priceCents === 0
+                ? "FREE"
+                : formateMoney(option.priceCents)}
             </div>
           </div>
         );
