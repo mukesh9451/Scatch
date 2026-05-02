@@ -212,3 +212,34 @@
 .quantity-textbox{
   width: 50px;
 }
+
+.cart-item-details-grid {
+  display: grid;
+  grid-template-columns: 120px 1fr 200px;
+  column-gap: 25px;
+  align-items: start;
+}
+
+.delivery-option {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.delivery-option-input {
+  margin-right: 10px;
+}
+
+.product-quantity {
+  margin-top: 8px;
+}
+
+.update-quantity-link,
+.delete-quantity-link {
+  margin-left: 8px;
+  cursor: pointer;
+}
+
+.cart-item-container {
+  margin-bottom: 25px;
+}
