@@ -10,26 +10,31 @@ export function OrderSummary({ cart, deliveryOptions, loadCart }) {
         cart.map((cartItem) => (
           <div key={cartItem.productId} className="cart-item-container">
 
+            {/* DATE */}
             <DeliveryDate
               cartItem={cartItem}
               deliveryOptions={deliveryOptions}
             />
 
-            {/* ✅ 2 COLUMN GRID */}
+            {/* 🔥 MAIN GRID FIX */}
             <div className="cart-item-details-grid">
 
               {/* LEFT SIDE */}
-              <CartItemDetails
-                cartItem={cartItem}
-                loadCart={loadCart}
-              />
+              <div>
+                <CartItemDetails
+                  cartItem={cartItem}
+                  loadCart={loadCart}
+                />
+              </div>
 
               {/* RIGHT SIDE */}
-              <DeliveryOptions
-                cartItem={cartItem}
-                deliveryOptions={deliveryOptions}
-                loadCart={loadCart}
-              />
+              <div>
+                <DeliveryOptions
+                  cartItem={cartItem}
+                  deliveryOptions={deliveryOptions}
+                  loadCart={loadCart}
+                />
+              </div>
 
             </div>
 
