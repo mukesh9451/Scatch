@@ -14,17 +14,20 @@ import Register from './components/Auth/Register'
 import Logout from './components/Auth/Logout'
 import ProtectedRoute from './components/Auth/ProtectedRoute'
 
+import api from './services/api'; // ✅ USE THIS
+
 function App() {
-  const [cart, setCart] = useState([])
+  const [cart, setCart] = useState([]);
 
   const loadCart = async () => {
     try {
-      const res = await axios.get('/api/cart-items?expand=product', {
-        withCredentials: true
-      });
+      const res = await api.get("/cart-items"); // ✅ FIXED
 
-      setCart((res.data || []).filter(i => i.product));
-    } catch {
+      console.log("CART API:", res.data);
+
+      setCart(res.data || []); // ❌ REMOVE FILTER
+    } catch (err) {
+      console.error("Cart load error:", err);
       setCart([]);
     }
   };
@@ -32,6 +35,9 @@ function App() {
   useEffect(() => {
     loadCart();
   }, []);
+
+  return ( ... );
+}
 
   return (
     <Routes>
