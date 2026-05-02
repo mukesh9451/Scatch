@@ -1,37 +1,45 @@
-import axios from "axios"
-import { useState,useEffect} from "react"
-import { Header } from "../../components/Header"
-import "./OrdersPage.css"
-import { OrderGrid } from "./OrderGrid"
-export function OrdersPage({cart,loadCart}) {
-    const[orders,setOrders]=useState([])
+import { useState, useEffect } from "react";
+import { Header } from "../../components/Header";
+import "./OrdersPage.css";
+import { OrderGrid } from "./OrderGrid";
+import api from "../../services/api"; // ✅ USE THIS
 
-    useEffect(() => {
-  const fetchOrdersData = async () => {
-    try {
-      let response = await axios.get("/api/orders?expand=products");
-      setOrders(response.data);
-      console.log(response.data);
-    } catch (error) {
-      console.error(error);
-      setOrders([]); // fallback
-    }
-  };
+export function OrdersPage({ cart, loadCart }) {
 
-  fetchOrdersData();
-}, []);
+  const [orders, setOrders] = useState([]);
 
-    return (
-        <>
-            <title>Orders</title>
-            <link rel="icon" type="image/svg+xml" href="orders-favicon.png" />
-            <Header cart={cart} />
+  useEffect(() => {
+    const fetchOrdersData = async () => {
+      try {
+        const res = await api.get("/orders?expand=products");
 
-            <div className="orders-page">
-                <div className="page-title">Your Orders</div>
-            
-                <OrderGrid orders={orders} loadCart={loadCart} />
-            </div>
-        </>
-    )
+        console.log("ORDERS:", res.data);
+
+        // ✅ SAFETY CHECK
+        if (Array.isArray(res.data)) {
+          setOrders(res.data);
+        } else {
+          setOrders([]);
+        }
+
+      } catch (error) {
+        console.error("ORDER ERROR:", error);
+        setOrders([]);
+      }
+    };
+
+    fetchOrdersData();
+  }, []);
+
+  return (
+    <>
+      <Header cart={cart} />
+
+      <div className="orders-page">
+        <div className="page-title">Your Orders</div>
+
+        <OrderGrid orders={orders} loadCart={loadCart} />
+      </div>
+    </>
+  );
 }
