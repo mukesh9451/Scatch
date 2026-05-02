@@ -8,7 +8,6 @@ export function TrackingPage({ cart }) {
 
   const { orderId, productId } = useParams();
 
-  const [order, setOrder] = useState(null);
   const [orderProduct, setOrderProduct] = useState(null);
 
   useEffect(() => {
@@ -20,34 +19,27 @@ export function TrackingPage({ cart }) {
 
         const orderData = res.data;
 
-        setOrder(orderData);
+        if (Array.isArray(orderData.products)) {
 
-        // 🔥 SAFE FIND (THIS FIXES YOUR ERROR)
-        if (orderData && Array.isArray(orderData.products)) {
-
+          // 🔥 FIX: use _doc.productId
           const found = orderData.products.find((p) =>
-            p.productId === productId ||
-            p.product?._id === productId
+            p?._doc?.productId === productId ||
+            p?.product?._id === productId
           );
 
           setOrderProduct(found || null);
-
-        } else {
-          setOrderProduct(null);
         }
 
       } catch (err) {
         console.error("TRACKING ERROR:", err);
-        setOrder(null);
-        setOrderProduct(null);
       }
     };
 
     loadTracking();
   }, [orderId, productId]);
 
-  // 🔥 SAFE RENDER (NO CRASH)
-  if (!order || !orderProduct || !orderProduct.product) {
+  // ✅ SAFE RENDER
+  if (!orderProduct || !orderProduct.product) {
     return (
       <>
         <Header cart={cart} />
@@ -63,7 +55,6 @@ export function TrackingPage({ cart }) {
       <Header cart={cart} />
 
       <div className="tracking-page">
-
         <h2>Tracking Details</h2>
 
         <div className="tracking-container">
@@ -79,14 +70,13 @@ export function TrackingPage({ cart }) {
 
             <p>
               <strong>Delivery Date:</strong>{" "}
-              {dayjs(orderProduct.estimatedDeliveryTimeMs).format("MMMM D")}
+              {dayjs(orderProduct._doc.estimatedDeliveryTimeMs).format("MMMM D")}
             </p>
 
             <p><strong>Status:</strong> In Transit 🚚</p>
           </div>
 
         </div>
-
       </div>
     </>
   );
