@@ -1,14 +1,31 @@
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import api from "../../services/api";
 import { formateMoney } from "../../utils/money";
 
 export function PaymentSummary({ paymentSummary, loadCart }) {
   const navigate = useNavigate();
 
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [error, setError] = useState("");
+
   const createOrder = async () => {
-    await api.post("/orders");
-    await loadCart();
-    navigate("/orders");
+    try {
+      setIsPlacingOrder(true);
+      setError("");
+
+      await api.post("/orders"); // ✅ correct route
+
+      await loadCart(); // 🔥 clear cart after order
+
+      navigate("/orders");
+
+    } catch (err) {
+      console.error("Order failed:", err);
+      setError("Failed to place order. Try again.");
+    } finally {
+      setIsPlacingOrder(false);
+    }
   };
 
   if (!paymentSummary) {
@@ -57,11 +74,15 @@ export function PaymentSummary({ paymentSummary, loadCart }) {
         </div>
       </div>
 
+      {/* 🔥 ERROR MESSAGE */}
+      {error && <p style={{ color: "red", marginTop: "10px" }}>{error}</p>}
+
       <button
         className="place-order-button button-primary"
         onClick={createOrder}
+        disabled={isPlacingOrder}
       >
-        Place your order
+        {isPlacingOrder ? "Placing Order..." : "Place your order"}
       </button>
 
     </div>
