@@ -1,84 +1,123 @@
+import { Link, useParams } from "react-router-dom";
+import { Header } from "../../components/Header";
 import "./TrackingPage.css";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import api from "../../services/api";
 import dayjs from "dayjs";
-import { Header } from "../../components/Header";
 
 export function TrackingPage({ cart }) {
   const { orderId, productId } = useParams();
-
   const [order, setOrder] = useState(null);
-  const [product, setProduct] = useState(null);
 
   useEffect(() => {
-    const fetchOrder = async () => {
+    const fetchTrackingData = async () => {
       try {
-        const res = await api.get("/orders");
-        const orders = res.data;
-
-        const foundOrder = orders.find(o => o._id === orderId);
-        if (!foundOrder) return;
-
-        setOrder(foundOrder);
-
-        const foundProduct = foundOrder.products.find(
-          (p) => p.productId === productId
-        );
-
-        if (!foundProduct) return;
-
-        setProduct(foundProduct);
-
+        const res = await api.get(`/orders/${orderId}`);
+        setOrder(res.data);
       } catch (err) {
-        console.error(err);
+        console.error("Tracking error:", err);
       }
     };
 
-    fetchOrder();
-  }, [orderId, productId]);
+    fetchTrackingData();
+  }, [orderId]);
 
-  if (!order || !product) {
+  if (!order) {
     return <p style={{ padding: "20px" }}>Loading tracking...</p>;
   }
 
-  const deliveryDate = dayjs(product.estimatedDeliveryTimeMs)
-    .format("dddd, MMMM D");
+  // 🔥 Find correct product
+  const orderProduct = order.products.find((p) => {
+    return p.productId?.toString() === productId;
+  });
+
+  if (!orderProduct) {
+    return <p style={{ padding: "20px" }}>Product not found</p>;
+  }
+
+  // 🔥 SAFE CALCULATION
+  const totalDeliveryTimeMs =
+    orderProduct.estimatedDeliveryTimeMs - order.orderTimeMs;
+
+  const timePassedMs = Date.now() - order.orderTimeMs;
+
+  let deliveryPercent = 0;
+
+  if (totalDeliveryTimeMs > 0) {
+    deliveryPercent = (timePassedMs / totalDeliveryTimeMs) * 100;
+  }
+
+  if (deliveryPercent < 0) deliveryPercent = 0;
+  if (deliveryPercent > 100) deliveryPercent = 100;
+
+  const isPreparing = deliveryPercent < 33;
+  const isShipped = deliveryPercent >= 33 && deliveryPercent < 100;
+  const isDelivered = deliveryPercent === 100;
+
+  // 🔥 FIX IMAGE PATH
+  const imageUrl = orderProduct.product?.image
+    ? `https://scatch-sd9g.onrender.com/${orderProduct.product.image}`
+    : "https://via.placeholder.com/150";
+
+  const productName = orderProduct.product?.name || "Product";
 
   return (
     <>
       <Header cart={cart} />
 
       <div className="tracking-page">
-        <div className="tracking-title">Tracking your order</div>
+
+        <Link className="back-to-orders-link" to="/orders">
+          ← View all orders
+        </Link>
 
         <div className="tracking-card">
 
-          {/* IMAGE (optional if you fetch product later) */}
           <img
-            src={`https://scatch-sd9g.onrender.com/images/products/placeholder.png`}
-            alt="product"
-            className="tracking-image"
+            className="product-image"
+            src={imageUrl}
+            alt={productName}
           />
 
           <div className="tracking-info">
-            <p>
-              <span className="tracking-label">Order ID:</span> {order._id}
-            </p>
 
-            <p>
-              <span className="tracking-label">Product ID:</span> {product.productId}
-            </p>
+            <div className="delivery-date">
+              {deliveryPercent === 100 ? "Delivered on" : "Arriving on"}{" "}
+              {dayjs(orderProduct.estimatedDeliveryTimeMs).format(
+                "dddd, MMMM D"
+              )}
+            </div>
 
-            <p>
-              <span className="tracking-label">Estimated Delivery:</span> {deliveryDate}
-            </p>
+            <div className="product-info">{productName}</div>
 
-            <p className="tracking-status">
-              Status: In Transit 🚚
-            </p>
+            <div className="product-info">
+              Quantity: {orderProduct.quantity}
+            </div>
+
+            {/* STATUS LABELS */}
+            <div className="progress-labels-container">
+              <div className={isPreparing ? "current-status" : ""}>
+                Preparing
+              </div>
+
+              <div className={isShipped ? "current-status" : ""}>
+                Shipped
+              </div>
+
+              <div className={isDelivered ? "current-status" : ""}>
+                Delivered
+              </div>
+            </div>
+
+            {/* PROGRESS BAR */}
+            <div className="progress-bar-container">
+              <div
+                className="progress-bar"
+                style={{ width: `${deliveryPercent}%` }}
+              ></div>
+            </div>
+
           </div>
-
         </div>
       </div>
     </>
