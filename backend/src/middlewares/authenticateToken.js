@@ -10,11 +10,10 @@ export const authenticateToken = (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // ✅ attach user info
+    // ✅ FIX: only use fields that exist
     req.user = {
       userId: decoded.userId,
-      role: decoded.role,
-      email: decoded.email
+      role: decoded.role
     };
 
     next();
