@@ -1,3 +1,4 @@
+import "./TrackingPage.css";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../../services/api";
@@ -16,15 +17,11 @@ export function TrackingPage({ cart }) {
         const res = await api.get("/orders");
         const orders = res.data;
 
-        const foundOrder = orders.find(
-          (o) => o._id === orderId
-        );
-
+        const foundOrder = orders.find(o => o._id === orderId);
         if (!foundOrder) return;
 
         setOrder(foundOrder);
 
-        // 🔥 FIX: safely find product
         const foundProduct = foundOrder.products.find(
           (p) => p.productId === productId
         );
@@ -34,7 +31,7 @@ export function TrackingPage({ cart }) {
         setProduct(foundProduct);
 
       } catch (err) {
-        console.error("Tracking error:", err);
+        console.error(err);
       }
     };
 
@@ -42,10 +39,9 @@ export function TrackingPage({ cart }) {
   }, [orderId, productId]);
 
   if (!order || !product) {
-    return <p style={{ padding: "20px" }}>Loading tracking info...</p>;
+    return <p style={{ padding: "20px" }}>Loading tracking...</p>;
   }
 
-  // 🔥 FIX: calculate delivery date
   const deliveryDate = dayjs(product.estimatedDeliveryTimeMs)
     .format("dddd, MMMM D");
 
@@ -53,15 +49,37 @@ export function TrackingPage({ cart }) {
     <>
       <Header cart={cart} />
 
-      <div style={{ padding: "30px" }}>
-        <h2>Tracking your order</h2>
+      <div className="tracking-page">
+        <div className="tracking-title">Tracking your order</div>
 
-        <p><strong>Order ID:</strong> {order._id}</p>
-        <p><strong>Product ID:</strong> {product.productId}</p>
+        <div className="tracking-card">
 
-        <p>
-          <strong>Estimated Delivery:</strong> {deliveryDate}
-        </p>
+          {/* IMAGE (optional if you fetch product later) */}
+          <img
+            src={`https://scatch-sd9g.onrender.com/images/products/placeholder.png`}
+            alt="product"
+            className="tracking-image"
+          />
+
+          <div className="tracking-info">
+            <p>
+              <span className="tracking-label">Order ID:</span> {order._id}
+            </p>
+
+            <p>
+              <span className="tracking-label">Product ID:</span> {product.productId}
+            </p>
+
+            <p>
+              <span className="tracking-label">Estimated Delivery:</span> {deliveryDate}
+            </p>
+
+            <p className="tracking-status">
+              Status: In Transit 🚚
+            </p>
+          </div>
+
+        </div>
       </div>
     </>
   );
