@@ -2,6 +2,13 @@ import mongoose from "mongoose";
 
 const orderSchema = new mongoose.Schema(
   {
+    // 🔥 ADD THIS (CRITICAL)
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+    },
+
     orderTimeMs: {
       type: Number,
       required: true
@@ -15,7 +22,7 @@ const orderSchema = new mongoose.Schema(
     products: [
       {
         productId: {
-          type: String,   // 👈 matches Product _id
+          type: String,
           required: true
         },
         quantity: {
