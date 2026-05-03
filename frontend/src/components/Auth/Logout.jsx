@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../../services/api";
-import { cachedUser } from "./ProtectedRoute"; // 🔥 IMPORT
+import { setCachedUser } from "./ProtectedRoute"; // ✅ use setter
 
 export default function Logout({ setCart }) {
   const navigate = useNavigate();
@@ -13,8 +13,8 @@ export default function Logout({ setCart }) {
       } catch (err) {
         console.error("Logout failed:", err);
       } finally {
-        // 🔥 RESET CACHE
-        cachedUser = null;
+        // 🔥 CLEAR AUTH CACHE
+        setCachedUser(null);
 
         // 🔥 CLEAR CART
         if (setCart) {
