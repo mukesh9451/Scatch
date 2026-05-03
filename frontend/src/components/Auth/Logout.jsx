@@ -1,18 +1,22 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../../services/api";
+import { cachedUser } from "./ProtectedRoute"; // 🔥 IMPORT
 
-export default function Logout({ setCart }) { // 🔥 ADD PROP
+export default function Logout({ setCart }) {
   const navigate = useNavigate();
 
   useEffect(() => {
     const handleLogout = async () => {
       try {
-        await logoutUser(); // clear cookie
+        await logoutUser();
       } catch (err) {
         console.error("Logout failed:", err);
       } finally {
-        // 🔥 CLEAR CART STATE
+        // 🔥 RESET CACHE
+        cachedUser = null;
+
+        // 🔥 CLEAR CART
         if (setCart) {
           setCart([]);
         }
