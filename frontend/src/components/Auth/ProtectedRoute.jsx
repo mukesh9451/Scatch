@@ -17,7 +17,7 @@ const ProtectedRoute = ({ children, role }) => {
 
     fetchUser();
   }, []);
-
+  console.log("USER:", user);
   // ⏳ Wait until auth is checked
   if (user === undefined) {
     return <div style={{ padding: "20px" }}>Loading...</div>;
