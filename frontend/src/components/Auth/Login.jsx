@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { loginUser } from "../../services/api";
+import { cachedUser } from "./ProtectedRoute"; // 🔥 IMPORT
 import "./Login.css";
 
 export default function Login({ loadCart }) {
@@ -17,13 +18,19 @@ export default function Login({ loadCart }) {
     setMessage("");
 
     try {
-      // 🔹 Step 1: login
+      // login
       await loginUser(email, password);
 
-      // 🔹 Step 2: load cart AFTER login
+      // 🔥 RESET CACHE
+      cachedUser = undefined;
+
+      // optional small delay (helps cookies sync)
+      await new Promise((res) => setTimeout(res, 50));
+
+      // load cart
       await loadCart();
 
-      // 🔹 Step 3: redirect
+      // redirect
       navigate("/home", { replace: true });
 
     } catch (err) {
