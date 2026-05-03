@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { loginUser, getCurrentUser } from "../../services/api";
+import { loginUser } from "../../services/api";
 import "./Login.css";
 
-export default function Login({ loadCart }) { // 🔥 ADD PROP
+export default function Login({ loadCart }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -17,24 +17,14 @@ export default function Login({ loadCart }) { // 🔥 ADD PROP
     setMessage("");
 
     try {
-      // ✅ Step 1: login
+      // 🔹 Step 1: login
       await loginUser(email, password);
 
-      // ✅ Step 2: verify session
-      const res = await getCurrentUser();
+      // 🔹 Step 2: load cart AFTER login
+      await loadCart();
 
-      if (res.data) {
-        // 🔥 Step 3: load user-specific cart
-        if (loadCart) {
-          await loadCart();
-        }
-
-        // 🔥 Step 4: navigate AFTER cart loads
-        navigate("/home", { replace: true });
-
-      } else {
-        throw new Error("User not authenticated");
-      }
+      // 🔹 Step 3: redirect
+      navigate("/home", { replace: true });
 
     } catch (err) {
       setMessage(
