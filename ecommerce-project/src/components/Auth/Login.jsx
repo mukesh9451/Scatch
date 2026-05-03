@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { loginUser, getCurrentUser } from "../../services/api";
 import "./Login.css";
 
-export default function Login() {
+export default function Login({ loadCart }) { // 🔥 ADD PROP
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -20,11 +20,18 @@ export default function Login() {
       // ✅ Step 1: login
       await loginUser(email, password);
 
-      // ✅ Step 2: verify session (VERY IMPORTANT)
+      // ✅ Step 2: verify session
       const res = await getCurrentUser();
 
-      if (res.data.user) {
-        navigate("/home", { replace: true }); // safer redirect
+      if (res.data) {
+        // 🔥 Step 3: load user-specific cart
+        if (loadCart) {
+          await loadCart();
+        }
+
+        // 🔥 Step 4: navigate AFTER cart loads
+        navigate("/home", { replace: true });
+
       } else {
         throw new Error("User not authenticated");
       }
