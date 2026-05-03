@@ -20,7 +20,7 @@ router.post("/register", async (req, res) => {
       name,
       email,
       password: hashed,
-      role: "user" // 🔥 force user
+      role: "user"
     });
 
     res.json({ message: "Registered" });
@@ -47,10 +47,13 @@ router.post("/login", async (req, res) => {
       { expiresIn: "1h" }
     );
 
+    // ✅ FIXED COOKIE
     res.cookie("token", token, {
       httpOnly: true,
       secure: true,
-      sameSite: "None"
+      sameSite: "None",
+      path: "/",                // 🔥 IMPORTANT
+      maxAge: 60 * 60 * 1000
     });
 
     res.json({ message: "Logged in" });
@@ -62,13 +65,22 @@ router.post("/login", async (req, res) => {
 
 /* PROFILE */
 router.get("/profile", authenticateToken, async (req, res) => {
-  const user = await User.findById(req.user.userId).select("-password");
+  const user = await User
+    .findById(req.user.userId)
+    .select("-password");
+
   res.json(user);
 });
 
 /* LOGOUT */
 router.post("/logout", (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+    path: "/" // 🔥 MUST MATCH LOGIN
+  });
+
   res.json({ message: "Logged out" });
 });
 
