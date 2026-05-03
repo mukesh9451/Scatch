@@ -1,19 +1,29 @@
 import api from "../../services/api";
 import { formateMoney } from "../../utils/money";
 import dayjs from "dayjs";
+import { useState } from "react";
 
 export function DeliveryOptions({ deliveryOptions, cartItem, loadCart }) {
 
+  const [loading, setLoading] = useState(false);
+
   const updateDeliveryOption = async (optionId) => {
+    if (loading) return;
+
     try {
-      await api.put(`/cart/${cartItem.productId}`, {   // ✅ FIXED ROUTE
+      setLoading(true);
+
+      // ✅ CORRECT ROUTE
+      await api.put(`/cart-items/${cartItem.productId}`, {
         deliveryOptionId: optionId
       });
 
-      await loadCart(); // 🔥 refresh cart
+      await loadCart(); // refresh cart
 
     } catch (err) {
       console.error("Delivery update failed:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -35,7 +45,7 @@ export function DeliveryOptions({ deliveryOptions, cartItem, loadCart }) {
           <div
             key={option._id}
             className="delivery-option"
-            onClick={() => updateDeliveryOption(option._id)} // ✅ FIX
+            onClick={() => updateDeliveryOption(option._id)}
           >
 
             <input
@@ -48,7 +58,7 @@ export function DeliveryOptions({ deliveryOptions, cartItem, loadCart }) {
             <div>
               <div className="delivery-option-date">
                 {dayjs(option.estimatedDeliveryTimeMs)
-                  .format("dddd, MMMM, D")}
+                  .format("dddd, MMMM D")}
               </div>
 
               <div className="delivery-option-price">
