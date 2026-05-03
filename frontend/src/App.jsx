@@ -18,33 +18,46 @@ import ProtectedRoute from './components/Auth/ProtectedRoute';
 function App() {
 
   const [cart, setCart] = useState([]);
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
 
   /* ================= LOAD CART ================= */
   const loadCart = async () => {
     try {
-      const res = await api.get("/cart"); // ✅ FIXED
-
+      const res = await api.get("/cart-items"); // ✅ CORRECT ROUTE
       setCart(res.data || []);
-
     } catch (err) {
-      console.error("Cart error:", err);
       setCart([]);
     }
   };
 
-  /* ================= INITIAL LOAD ================= */
+  /* ================= CHECK AUTH FIRST ================= */
   useEffect(() => {
-    loadCart();
+    const checkAuth = async () => {
+      try {
+        await api.get("/auth/profile");
+        await loadCart(); // only load cart if logged in
+      } catch {
+        setCart([]);
+      } finally {
+        setIsAuthChecked(true);
+      }
+    };
+
+    checkAuth();
   }, []);
+
+  // ⏳ prevent app from rendering too early
+  if (!isAuthChecked) {
+    return <div style={{ padding: "20px" }}>Loading app...</div>;
+  }
 
   return (
     <Routes>
 
       <Route index element={<Navigate to="/home" />} />
 
-      {/* 🔥 PASS loadCart */}
+      {/* PUBLIC */}
       <Route path="login" element={<Login loadCart={loadCart} />} />
-
       <Route path="register" element={<Register />} />
 
       {/* ADMIN */}
@@ -94,7 +107,6 @@ function App() {
         }
       />
 
-      {/* 🔥 PASS setCart */}
       <Route path="logout" element={<Logout setCart={setCart} />} />
 
       <Route path="*" element={<NotFoundPage cart={cart} />} />
