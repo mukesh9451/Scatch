@@ -2,19 +2,22 @@ import mongoose from "mongoose";
 
 const cartItemSchema = new mongoose.Schema(
   {
-    productId: {
-      type: String,   // 👈 matches Product _id
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true
     },
-
+    productId: {
+      type: String,
+      required: true
+    },
     quantity: {
       type: Number,
       required: true,
       min: 1
     },
-
     deliveryOptionId: {
-      type: String,   // 👈 matches DeliveryOption _id
+      type: String,
       required: true,
       default: "1"
     }
