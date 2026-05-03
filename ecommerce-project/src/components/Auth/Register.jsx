@@ -7,7 +7,6 @@ export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("user"); // ✅ NEW
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -19,7 +18,8 @@ export default function Register() {
     setMessage("");
 
     try {
-      const res = await registerUser(name, email, password, role); // ✅ pass role
+      const res = await registerUser(name, email, password);
+
       setMessage(res.data.message || "Registration successful!");
 
       setTimeout(() => {
@@ -32,14 +32,6 @@ export default function Register() {
       setIsLoading(false);
     }
   };
-
-   console.log("FORM DATA:", {
-    name,
-    email,
-    password,
-    role
-  });
-
 
   return (
     <div className="register-container">
@@ -70,34 +62,23 @@ export default function Register() {
           className="register-input"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password (min 6 characters)"
+          placeholder="Password"
           required
         />
-
-        {/* ✅ ROLE SELECT */}
-        <select
-          className="register-input"
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-        >
-          <option value="user">User</option>
-          <option value="admin">Admin</option>
-        </select>
 
         <button
           type="submit"
           className="register-button"
           disabled={isLoading}
         >
-          {isLoading ? "Creating Account..." : "Create Account"}
+          {isLoading ? "Creating..." : "Create Account"}
         </button>
       </form>
 
       {message && <p className="register-error">{message}</p>}
 
       <p className="register-link">
-        Already have an account?{" "}
-        <Link to="/login">Sign in here</Link>
+        Already have an account? <Link to="/login">Login</Link>
       </p>
     </div>
   );
