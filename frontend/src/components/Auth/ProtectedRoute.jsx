@@ -3,37 +3,44 @@ import { Navigate } from "react-router-dom";
 import { getCurrentUser } from "../../services/api";
 
 const ProtectedRoute = ({ children, role }) => {
-  const [user, setUser] = useState(undefined);
+  const [user, setUser] = useState(undefined); // 🔥 IMPORTANT
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const res = await getCurrentUser();
+
+        console.log("USER:", res.data); // debug
+
         setUser(res.data); // backend returns user directly
-      } catch {
+      } catch (err) {
+        console.log("AUTH ERROR:", err.response?.status);
         setUser(null);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchUser();
   }, []);
-  console.log("USER:", user);
-  // ⏳ Wait until auth is checked
-  if (user === undefined) {
-    return <div style={{ padding: "20px" }}>Loading...</div>;
+
+  // 🔥 WAIT until user is fetched
+  if (loading) {
+    return <div style={{ padding: "20px" }}>Checking auth...</div>;
   }
 
-  // ❌ Not logged in
-  if (!user) {
+  // 🔥 NOT LOGGED IN
+  if (user === null) {
     return <Navigate to="/login" replace />;
   }
 
-  // ❌ Role mismatch
+  // 🔥 ROLE CHECK
   if (role && user.role !== role) {
     return <Navigate to="/home" replace />;
   }
 
-  // ✅ Allowed
+  // ✅ ALLOWED
   return children;
 };
 
