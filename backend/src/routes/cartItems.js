@@ -1,134 +1,76 @@
 import express from "express";
 import CartItem from "../models/CartItem.js";
 import Product from "../models/Product.js";
-import DeliveryOption from "../models/DeliveryOption.js";
+import { authenticateToken } from "../middlewares/authenticateToken.js";
 
 const router = express.Router();
 
-/* GET CART ITEMS */
-router.get("/", async (req, res) => {
-  try {
-    const expand = req.query.expand;
+/* GET CART */
+router.get("/", authenticateToken, async (req, res) => {
+  const userId = req.user.userId;
 
-    let cartItems = await CartItem.find();
+  let cart = await CartItem.find({ userId });
 
-    if (expand === "product") {
-      cartItems = await Promise.all(
-        cartItems.map(async (item) => {
-          const product = await Product.findById(item.productId); // ✅ FIX
+  cart = await Promise.all(
+    cart.map(async (item) => {
+      const product = await Product.findById(item.productId);
+      return { ...item.toObject(), product };
+    })
+  );
 
-          return {
-            ...item.toObject(),
-            product
-          };
-        })
-      );
-    }
-
-    res.json(cartItems);
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  res.json(cart);
 });
 
+/* ADD */
+router.post("/", authenticateToken, async (req, res) => {
+  const userId = req.user.userId;
+  const { productId, quantity } = req.body;
 
-/* ADD ITEM TO CART */
-router.post("/", async (req, res) => {
-  try {
-    const { productId, quantity } = req.body;
+  let item = await CartItem.findOne({ userId, productId });
 
-    const product = await Product.findById(productId); // ✅ FIX
-    if (!product) {
-      return res.status(400).json({ error: "Product not found" });
-    }
-
-    if (typeof quantity !== "number" || quantity < 1 || quantity > 10) {
-      return res.status(400).json({
-        error: "Quantity must be between 1 and 10"
-      });
-    }
-
-    let cartItem = await CartItem.findOne({ productId });
-
-    if (cartItem) {
-      cartItem.quantity += quantity;
-      await cartItem.save();
-    } else {
-      cartItem = await CartItem.create({
-        productId,
-        quantity,
-        deliveryOptionId: "1" // make sure this exists
-      });
-    }
-
-    res.status(201).json(cartItem);
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  if (item) {
+    item.quantity += quantity;
+  } else {
+    item = new CartItem({
+      userId,
+      productId,
+      quantity,
+      deliveryOptionId: "1"
+    });
   }
+
+  await item.save();
+  res.json(item);
 });
 
+/* UPDATE */
+router.put("/:productId", authenticateToken, async (req, res) => {
+  const userId = req.user.userId;
 
-/* UPDATE CART ITEM */
-router.put("/:productId", async (req, res) => {
-  try {
-    const { productId } = req.params;
-    const { quantity, deliveryOptionId } = req.body;
+  const item = await CartItem.findOne({
+    userId,
+    productId: req.params.productId
+  });
 
-    const cartItem = await CartItem.findOne({ productId });
+  if (!item) return res.status(404).json({ error: "Not found" });
 
-    if (!cartItem) {
-      return res.status(404).json({ error: "Cart item not found" });
-    }
+  if (req.body.quantity) item.quantity = req.body.quantity;
+  if (req.body.deliveryOptionId) item.deliveryOptionId = req.body.deliveryOptionId;
 
-    if (quantity !== undefined) {
-      if (typeof quantity !== "number" || quantity < 1) {
-        return res.status(400).json({
-          error: "Quantity must be greater than 0"
-        });
-      }
-      cartItem.quantity = quantity;
-    }
-
-    if (deliveryOptionId !== undefined) {
-      const deliveryOption = await DeliveryOption.findById(deliveryOptionId); // ✅ FIX
-
-      if (!deliveryOption) {
-        return res.status(400).json({ error: "Invalid delivery option" });
-      }
-
-      cartItem.deliveryOptionId = deliveryOptionId;
-    }
-
-    await cartItem.save();
-
-    res.json(cartItem);
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  await item.save();
+  res.json(item);
 });
 
+/* DELETE */
+router.delete("/:productId", authenticateToken, async (req, res) => {
+  const userId = req.user.userId;
 
-/* DELETE CART ITEM */
-router.delete("/:productId", async (req, res) => {
-  try {
-    const { productId } = req.params;
+  await CartItem.deleteOne({
+    userId,
+    productId: req.params.productId
+  });
 
-    const cartItem = await CartItem.findOne({ productId });
-
-    if (!cartItem) {
-      return res.status(404).json({ error: "Cart item not found" });
-    }
-
-    await CartItem.deleteOne({ productId });
-
-    res.status(204).send();
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  res.sendStatus(204);
 });
 
 export default router;
