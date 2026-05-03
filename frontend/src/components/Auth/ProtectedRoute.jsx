@@ -2,20 +2,25 @@ import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { getCurrentUser } from "../../services/api";
 
+let cachedUser = undefined; // 🔥 global cache
+
 const ProtectedRoute = ({ children, role }) => {
-  const [user, setUser] = useState(undefined); // 🔥 IMPORTANT
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(cachedUser);
+  const [loading, setLoading] = useState(cachedUser === undefined);
 
   useEffect(() => {
+    // 🔥 already fetched → don't call again
+    if (cachedUser !== undefined) return;
+
     const fetchUser = async () => {
       try {
         const res = await getCurrentUser();
 
-        console.log("USER:", res.data); // debug
+        cachedUser = res.data; // 🔥 store globally
+        setUser(res.data);
 
-        setUser(res.data); // backend returns user directly
       } catch (err) {
-        console.log("AUTH ERROR:", err.response?.status);
+        cachedUser = null;
         setUser(null);
       } finally {
         setLoading(false);
@@ -25,22 +30,22 @@ const ProtectedRoute = ({ children, role }) => {
     fetchUser();
   }, []);
 
-  // 🔥 WAIT until user is fetched
+  // ⏳ loading only first time
   if (loading) {
     return <div style={{ padding: "20px" }}>Checking auth...</div>;
   }
 
-  // 🔥 NOT LOGGED IN
+  // ❌ not logged in
   if (user === null) {
     return <Navigate to="/login" replace />;
   }
 
-  // 🔥 ROLE CHECK
+  // ❌ role mismatch
   if (role && user.role !== role) {
     return <Navigate to="/home" replace />;
   }
 
-  // ✅ ALLOWED
+  // ✅ allowed
   return children;
 };
 
