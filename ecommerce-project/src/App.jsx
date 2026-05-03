@@ -19,19 +19,20 @@ function App() {
 
   const [cart, setCart] = useState([]);
 
+  /* ================= LOAD CART ================= */
   const loadCart = async () => {
     try {
-      const res = await api.get("/cart-items");
-
-      console.log("CART API:", res.data);
+      const res = await api.get("/cart"); // ✅ FIXED
 
       setCart(res.data || []);
+
     } catch (err) {
       console.error("Cart error:", err);
       setCart([]);
     }
   };
 
+  /* ================= INITIAL LOAD ================= */
   useEffect(() => {
     loadCart();
   }, []);
@@ -41,7 +42,9 @@ function App() {
 
       <Route index element={<Navigate to="/home" />} />
 
-      <Route path="login" element={<Login />} />
+      {/* 🔥 PASS loadCart */}
+      <Route path="login" element={<Login loadCart={loadCart} />} />
+
       <Route path="register" element={<Register />} />
 
       {/* ADMIN */}
@@ -91,7 +94,9 @@ function App() {
         }
       />
 
-      <Route path="logout" element={<Logout />} />
+      {/* 🔥 PASS setCart */}
+      <Route path="logout" element={<Logout setCart={setCart} />} />
+
       <Route path="*" element={<NotFoundPage cart={cart} />} />
 
     </Routes>
