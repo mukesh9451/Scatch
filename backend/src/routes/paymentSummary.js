@@ -2,27 +2,27 @@ import express from "express";
 import CartItem from "../models/CartItem.js";
 import Product from "../models/Product.js";
 import DeliveryOption from "../models/DeliveryOption.js";
+import { authenticateToken } from "../middlewares/authenticateToken.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+/* ================= PAYMENT SUMMARY ================= */
+router.get("/", authenticateToken, async (req, res) => {
   try {
-    const cartItems = await CartItem.find();
+    const userId = req.user.userId;
+
+    // ✅ FIX: only current user's cart
+    const cartItems = await CartItem.find({ userId });
 
     let totalItems = 0;
     let productCostCents = 0;
     let shippingCostCents = 0;
 
     for (const item of cartItems) {
-
       const product = await Product.findById(item.productId);
       const deliveryOption = await DeliveryOption.findById(item.deliveryOptionId);
 
-      // ✅ prevent crash
-      if (!product || !deliveryOption) {
-        console.log("Invalid cart item:", item);
-        continue;
-      }
+      if (!product || !deliveryOption) continue;
 
       totalItems += item.quantity;
       productCostCents += product.priceCents * item.quantity;
@@ -43,6 +43,7 @@ router.get("/", async (req, res) => {
     });
 
   } catch (error) {
+    console.error("Payment summary error:", error);
     res.status(500).json({ message: error.message });
   }
 });
