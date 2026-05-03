@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
 import api from './services/api';
@@ -16,47 +16,24 @@ import Logout from './components/Auth/Logout';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 
 function App() {
-
   const [cart, setCart] = useState([]);
-  const [isAuthChecked, setIsAuthChecked] = useState(false);
 
-  /* ================= LOAD CART ================= */
+  // 🔹 Load cart only when needed (after login or user actions)
   const loadCart = async () => {
     try {
-      const res = await api.get("/cart-items"); // ✅ CORRECT ROUTE
+      const res = await api.get("/cart-items");
       setCart(res.data || []);
-    } catch (err) {
+    } catch {
       setCart([]);
     }
   };
-
-  /* ================= CHECK AUTH FIRST ================= */
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        await api.get("/auth/profile");
-        await loadCart(); // only load cart if logged in
-      } catch {
-        setCart([]);
-      } finally {
-        setIsAuthChecked(true);
-      }
-    };
-
-    checkAuth();
-  }, []);
-
-  // ⏳ prevent app from rendering too early
-  if (!isAuthChecked) {
-    return <div style={{ padding: "20px" }}>Loading app...</div>;
-  }
 
   return (
     <Routes>
 
       <Route index element={<Navigate to="/home" />} />
 
-      {/* PUBLIC */}
+      {/* PUBLIC ROUTES */}
       <Route path="login" element={<Login loadCart={loadCart} />} />
       <Route path="register" element={<Register />} />
 
