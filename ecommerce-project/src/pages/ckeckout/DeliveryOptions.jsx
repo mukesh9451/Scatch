@@ -3,6 +3,20 @@ import { formateMoney } from "../../utils/money";
 import dayjs from "dayjs";
 
 export function DeliveryOptions({ deliveryOptions, cartItem, loadCart }) {
+
+  const updateDeliveryOption = async (optionId) => {
+    try {
+      await api.put(`/cart/${cartItem.productId}`, {   // ✅ FIXED ROUTE
+        deliveryOptionId: optionId
+      });
+
+      await loadCart(); // 🔥 refresh cart
+
+    } catch (err) {
+      console.error("Delivery update failed:", err);
+    }
+  };
+
   return (
     <div className="delivery-options">
 
@@ -17,18 +31,11 @@ export function DeliveryOptions({ deliveryOptions, cartItem, loadCart }) {
           priceString = `${formateMoney(option.priceCents)} - Shipping`;
         }
 
-        const updateDeliveryOption = async () => {
-          await api.put(`/cart-items/${cartItem.productId}`, {
-            deliveryOptionId: option._id
-          });
-          await loadCart();
-        };
-
         return (
           <div
             key={option._id}
             className="delivery-option"
-            onClick={updateDeliveryOption}
+            onClick={() => updateDeliveryOption(option._id)} // ✅ FIX
           >
 
             <input
