@@ -14,12 +14,15 @@ const ProtectedRoute = ({ children, role }) => {
         const res = await getCurrentUser();
 
         if (isMounted) {
-          setUser(res.data.user);
+          // ✅ FIX: backend returns user directly
+          setUser(res.data);
         }
+
       } catch (err) {
         if (isMounted) {
           setUser(null);
         }
+
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -30,13 +33,13 @@ const ProtectedRoute = ({ children, role }) => {
     fetchUser();
 
     return () => {
-      isMounted = false; // prevent memory leak
+      isMounted = false;
     };
   }, []);
 
-  // ⏳ still checking auth
+  // ⏳ loading state
   if (loading) {
-    return <div>Loading...</div>;
+    return <div style={{ padding: "20px" }}>Checking authentication...</div>;
   }
 
   // ❌ not logged in
@@ -44,7 +47,7 @@ const ProtectedRoute = ({ children, role }) => {
     return <Navigate to="/login" replace />;
   }
 
-  // ❌ role mismatch (e.g., admin route)
+  // ❌ role mismatch
   if (role && user.role !== role) {
     return <Navigate to="/home" replace />;
   }
