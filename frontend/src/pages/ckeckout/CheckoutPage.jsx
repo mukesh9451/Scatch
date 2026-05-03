@@ -6,9 +6,9 @@ import { OrderSummary } from "./OrderSummary";
 import { PaymentSummary } from "./PaymentSummary";
 
 export function CheckoutPage({ cart, loadCart }) {
+
   const [deliveryOptions, setDeliveryOptions] = useState([]);
   const [paymentSummary, setPaymentSummary] = useState(null);
-  const [loadingPayment, setLoadingPayment] = useState(true);
 
   /* ================= DELIVERY OPTIONS (LOAD ONCE) ================= */
   useEffect(() => {
@@ -17,33 +17,37 @@ export function CheckoutPage({ cart, loadCart }) {
         const res = await api.get("/delivery-options");
         setDeliveryOptions(res.data);
       } catch (err) {
-        console.error("Delivery options error:", err);
+        console.error(err);
       }
     };
 
     fetchDeliveryOptions();
-  }, []); // ✅ FIXED (no cart dependency)
+  }, []);
 
-  /* ================= PAYMENT SUMMARY ================= */
+  /* ================= PAYMENT SUMMARY (SAFE) ================= */
   useEffect(() => {
-    const fetchPaymentSummary = async () => {
-      try {
-        setLoadingPayment(true);
+    let ignore = false;
 
+    const fetchPayment = async () => {
+      try {
         const res = await api.get("/payment-summary");
 
-        setPaymentSummary(res.data);
+        if (!ignore) {
+          setPaymentSummary(res.data);
+        }
 
       } catch (err) {
-        console.error("Payment error:", err);
-        setPaymentSummary(null);
-      } finally {
-        setLoadingPayment(false);
+        console.error(err);
       }
     };
 
-    fetchPaymentSummary();
-  }, [cart]); // ✅ correct dependency
+    fetchPayment();
+
+    return () => {
+      ignore = true;
+    };
+
+  }, [cart]); // ✅ only when cart changes
 
   return (
     <>
@@ -60,16 +64,10 @@ export function CheckoutPage({ cart, loadCart }) {
             loadCart={loadCart}
           />
 
-          {loadingPayment ? (
-            <div className="payment-summary">
-              <p>Loading payment...</p>
-            </div>
-          ) : (
-            <PaymentSummary
-              paymentSummary={paymentSummary}
-              loadCart={loadCart}
-            />
-          )}
+          <PaymentSummary
+            paymentSummary={paymentSummary}
+            loadCart={loadCart}
+          />
 
         </div>
       </div>
