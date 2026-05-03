@@ -2,22 +2,27 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../../services/api";
 
-export default function Logout() {
+export default function Logout({ setCart }) { // 🔥 ADD PROP
   const navigate = useNavigate();
 
   useEffect(() => {
     const handleLogout = async () => {
       try {
-        await logoutUser(); // ✅ clears the httpOnly cookie on the backend
+        await logoutUser(); // clear cookie
       } catch (err) {
         console.error("Logout failed:", err);
       } finally {
-        navigate("/login", { replace: true }); // ✅ always redirect
+        // 🔥 CLEAR CART STATE
+        if (setCart) {
+          setCart([]);
+        }
+
+        navigate("/login", { replace: true });
       }
     };
 
     handleLogout();
-  }, [navigate]);
+  }, [navigate, setCart]);
 
   return null;
 }
