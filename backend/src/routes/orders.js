@@ -13,7 +13,9 @@ router.post("/", authenticateToken, async (req, res) => {
 
   const cart = await CartItem.find({ userId });
 
-  if (!cart.length) return res.status(400).json({ error: "Empty cart" });
+  if (!cart.length) {
+    return res.status(400).json({ error: "Empty cart" });
+  }
 
   let total = 0;
 
@@ -45,20 +47,63 @@ router.post("/", authenticateToken, async (req, res) => {
   res.json(order);
 });
 
-/* GET ORDERS */
+
+/* GET ORDERS (WITH PRODUCT DATA) */
 router.get("/", authenticateToken, async (req, res) => {
-  const orders = await Order.find({ userId: req.user.userId }).sort({ createdAt: -1 });
-  res.json(orders);
+  const orders = await Order.find({
+    userId: req.user.userId
+  }).sort({ createdAt: -1 });
+
+  const enrichedOrders = await Promise.all(
+    orders.map(async (order) => {
+      const products = await Promise.all(
+        order.products.map(async (p) => {
+          const product = await Product.findById(p.productId);
+
+          return {
+            ...p.toObject(),
+            product // ✅ ADD THIS
+          };
+        })
+      );
+
+      return {
+        ...order.toObject(),
+        products
+      };
+    })
+  );
+
+  res.json(enrichedOrders);
 });
 
-/* GET SINGLE */
+
+/* GET SINGLE ORDER (WITH PRODUCT DATA) */
 router.get("/:id", authenticateToken, async (req, res) => {
   const order = await Order.findOne({
     _id: req.params.id,
     userId: req.user.userId
   });
 
-  res.json(order);
+  if (!order) {
+    return res.status(404).json({ error: "Order not found" });
+  }
+
+  const products = await Promise.all(
+    order.products.map(async (p) => {
+      const product = await Product.findById(p.productId);
+
+      return {
+        ...p.toObject(),
+        product // ✅ ADD THIS
+      };
+    })
+  );
+
+  res.json({
+    ...order.toObject(),
+    products
+  });
 });
 
 export default router;
