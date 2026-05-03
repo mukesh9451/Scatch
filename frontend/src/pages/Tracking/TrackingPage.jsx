@@ -1,99 +1,67 @@
-import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import api from "../../services/api";
 import dayjs from "dayjs";
 import { Header } from "../../components/Header";
-import "./TrackingPage.css"; // ✅ IMPORTANT
 
 export function TrackingPage({ cart }) {
   const { orderId, productId } = useParams();
 
-  const [orderProduct, setOrderProduct] = useState(null);
+  const [order, setOrder] = useState(null);
+  const [product, setProduct] = useState(null);
 
   useEffect(() => {
-    const loadTracking = async () => {
+    const fetchOrder = async () => {
       try {
-        const res = await api.get(`/orders/${orderId}?expand=products`);
+        const res = await api.get("/orders");
+        const orders = res.data;
 
-        const orderData = res.data;
+        const foundOrder = orders.find(
+          (o) => o._id === orderId
+        );
 
-        const found = Array.isArray(orderData?.products)
-          ? orderData.products.find((p) => {
-              const id =
-                p?._doc?.productId ||
-                p?.productId ||
-                p?.product?._id;
+        if (!foundOrder) return;
 
-              return id?.toString() === productId;
-            })
-          : null;
+        setOrder(foundOrder);
 
-        setOrderProduct(found || null);
+        // 🔥 FIX: safely find product
+        const foundProduct = foundOrder.products.find(
+          (p) => p.productId === productId
+        );
+
+        if (!foundProduct) return;
+
+        setProduct(foundProduct);
 
       } catch (err) {
-        console.error("TRACKING ERROR:", err);
+        console.error("Tracking error:", err);
       }
     };
 
-    loadTracking();
+    fetchOrder();
   }, [orderId, productId]);
 
-  // ✅ LOADING STATE
-  if (!orderProduct || !orderProduct.product) {
-    return (
-      <>
-        <Header cart={cart} />
-        <div className="tracking-page">
-          <p>Loading tracking...</p>
-        </div>
-      </>
-    );
+  if (!order || !product) {
+    return <p style={{ padding: "20px" }}>Loading tracking info...</p>;
   }
+
+  // 🔥 FIX: calculate delivery date
+  const deliveryDate = dayjs(product.estimatedDeliveryTimeMs)
+    .format("dddd, MMMM D");
 
   return (
     <>
       <Header cart={cart} />
 
-      <div className="tracking-page">
+      <div style={{ padding: "30px" }}>
+        <h2>Tracking your order</h2>
 
-        {/* BACK LINK */}
-        <Link to="/orders" className="back-to-orders-link">
-          ← View all orders
-        </Link>
+        <p><strong>Order ID:</strong> {order._id}</p>
+        <p><strong>Product ID:</strong> {product.productId}</p>
 
-        {/* DELIVERY DATE */}
-        <div className="delivery-date">
-          Arriving on{" "}
-          {dayjs(orderProduct._doc.estimatedDeliveryTimeMs).format("MMMM D")}
-        </div>
-
-        {/* PRODUCT INFO */}
-        <div className="product-info">
-          Product: {orderProduct.product.name}
-        </div>
-
-        {/* IMAGE */}
-        <img
-          className="product-image"
-          src={`https://scatch-sd9g.onrender.com/${orderProduct.product.image}`}
-          alt={orderProduct.product.name}
-        />
-
-        {/* PROGRESS LABELS */}
-        <div className="progress-labels-container">
-          <div className="progress-label">Preparing</div>
-          <div className="progress-label current-status">Shipped</div>
-          <div className="progress-label">Delivered</div>
-        </div>
-
-        {/* PROGRESS BAR */}
-        <div className="progress-bar-container">
-          <div
-            className="progress-bar"
-            style={{ width: "60%" }}
-          ></div>
-        </div>
-
+        <p>
+          <strong>Estimated Delivery:</strong> {deliveryDate}
+        </p>
       </div>
     </>
   );
